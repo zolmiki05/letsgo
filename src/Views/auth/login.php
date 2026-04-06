@@ -22,8 +22,9 @@
 
         <form method="POST" action="/login" class="form-stack">
             <div class="field">
-                <label for="email"><?= e(Lang::t('auth.email')) ?></label>
-                <input type="email" id="email" name="email" required autocomplete="email" autofocus>
+                <label for="identifier"><?= e(Lang::t('auth.identifier')) ?></label>
+                <input type="text" id="identifier" name="identifier" required autocomplete="username" autofocus
+                       placeholder="<?= e(Lang::t('auth.identifier_placeholder')) ?>">
             </div>
             <div class="field">
                 <label for="password"><?= e(Lang::t('auth.password')) ?></label>

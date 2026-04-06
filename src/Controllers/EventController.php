@@ -36,17 +36,35 @@ class EventController
             redirect('/groups/' . $groupId . '/events/create');
         }
 
+        // Date: either a proper date or free text
+        $dateMode     = $_POST['date_mode'] ?? 'text';
+        $eventDate    = ($dateMode === 'date') ? ($_POST['event_date'] ?? '') : '';
+        $dateText     = ($dateMode === 'text') ? trim($_POST['date_text'] ?? '') : '';
+
+        // Deadline signup: date or text
+        $dlSignupMode = $_POST['deadline_signup_mode'] ?? 'date';
+        $dlSignup     = ($dlSignupMode === 'date') ? ($_POST['deadline_signup']      ?? '') : '';
+        $dlSignupTxt  = ($dlSignupMode === 'text') ? trim($_POST['deadline_signup_text']  ?? '') : '';
+
+        // Deadline decision: date or text
+        $dlDecMode    = $_POST['deadline_decision_mode'] ?? 'date';
+        $dlDecision   = ($dlDecMode === 'date') ? ($_POST['deadline_decision']      ?? '') : '';
+        $dlDecTxt     = ($dlDecMode === 'text') ? trim($_POST['deadline_decision_text'] ?? '') : '';
+
         $eventId = Event::create([
-            'group_id'          => $groupId,
-            'creator_id'        => $userId,
-            'title'             => $title,
-            'description'       => trim($_POST['description'] ?? ''),
-            'location'          => trim($_POST['location'] ?? ''),
-            'date_text'         => trim($_POST['date_text'] ?? ''),
-            'deadline_signup'   => $_POST['deadline_signup'] ?? '',
-            'deadline_decision' => $_POST['deadline_decision'] ?? '',
-            'cost'              => trim($_POST['cost'] ?? ''),
-            'notes'             => trim($_POST['notes'] ?? ''),
+            'group_id'                => $groupId,
+            'creator_id'              => $userId,
+            'title'                   => $title,
+            'description'             => trim($_POST['description'] ?? ''),
+            'location'                => trim($_POST['location'] ?? ''),
+            'event_date'              => $eventDate,
+            'date_text'               => $dateText,
+            'deadline_signup'         => $dlSignup,
+            'deadline_signup_text'    => $dlSignupTxt,
+            'deadline_decision'       => $dlDecision,
+            'deadline_decision_text'  => $dlDecTxt,
+            'cost'                    => trim($_POST['cost'] ?? ''),
+            'notes'                   => trim($_POST['notes'] ?? ''),
         ]);
 
         redirect('/events/' . $eventId);

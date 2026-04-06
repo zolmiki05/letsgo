@@ -38,22 +38,22 @@
                     <dd><?= e($event['location']) ?></dd>
                 </div>
                 <?php endif; ?>
-                <?php if ($event['date_text']): ?>
+                <?php if ($event['event_date'] || $event['date_text']): ?>
                 <div class="detail-row">
                     <dt><?= e(Lang::t('event.field_date')) ?></dt>
-                    <dd><?= e($event['date_text']) ?></dd>
+                    <dd><?= $event['event_date'] ? e(fmtDate($event['event_date'])) : e($event['date_text']) ?></dd>
                 </div>
                 <?php endif; ?>
-                <?php if ($event['deadline_signup']): ?>
+                <?php if ($event['deadline_signup'] || ($event['deadline_signup_text'] ?? '')): ?>
                 <div class="detail-row">
                     <dt><?= e(Lang::t('event.field_deadline_signup')) ?></dt>
-                    <dd><?= e(fmtDate($event['deadline_signup'])) ?></dd>
+                    <dd><?= $event['deadline_signup'] ? e(fmtDate($event['deadline_signup'])) : e($event['deadline_signup_text']) ?></dd>
                 </div>
                 <?php endif; ?>
-                <?php if ($event['deadline_decision']): ?>
+                <?php if ($event['deadline_decision'] || ($event['deadline_decision_text'] ?? '')): ?>
                 <div class="detail-row">
                     <dt><?= e(Lang::t('event.field_deadline_decision')) ?></dt>
-                    <dd><?= e(fmtDate($event['deadline_decision'])) ?></dd>
+                    <dd><?= $event['deadline_decision'] ? e(fmtDate($event['deadline_decision'])) : e($event['deadline_decision_text']) ?></dd>
                 </div>
                 <?php endif; ?>
                 <?php if ($event['cost']): ?>

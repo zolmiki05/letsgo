@@ -33,21 +33,27 @@ class Event
         $db   = Database::getInstance();
         $stmt = $db->prepare(
             'INSERT INTO events
-             (group_id, creator_id, title, description, location, date_text,
-              deadline_signup, deadline_decision, cost, notes, status, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, \'IDEA\', NOW(), NOW())'
+             (group_id, creator_id, title, description, location,
+              event_date, date_text,
+              deadline_signup, deadline_signup_text,
+              deadline_decision, deadline_decision_text,
+              cost, notes, status, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, \'IDEA\', NOW(), NOW())'
         );
         $stmt->execute([
             $data['group_id'],
             $data['creator_id'],
             $data['title'],
-            $data['description']       ?: null,
-            $data['location']          ?: null,
-            $data['date_text']         ?: null,
-            $data['deadline_signup']   ?: null,
-            $data['deadline_decision'] ?: null,
-            $data['cost']              ?: null,
-            $data['notes']             ?: null,
+            $data['description']            ?: null,
+            $data['location']               ?: null,
+            $data['event_date']             ?: null,
+            $data['date_text']              ?: null,
+            $data['deadline_signup']        ?: null,
+            $data['deadline_signup_text']   ?: null,
+            $data['deadline_decision']      ?: null,
+            $data['deadline_decision_text'] ?: null,
+            $data['cost']                   ?: null,
+            $data['notes']                  ?: null,
         ]);
         return (int)$db->lastInsertId();
     }

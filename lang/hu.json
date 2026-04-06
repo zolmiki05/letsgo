@@ -11,7 +11,12 @@
     "admin": "Admin"
   },
   "auth": {
+    "identifier": "E-mail vagy felhasználónév",
+    "identifier_placeholder": "email@cím.hu vagy felhasználónév",
     "email": "E-mail cím",
+    "username": "Felhasználónév",
+    "username_placeholder": "pl. kovacs_janos",
+    "username_hint": "3–30 karakter, csak betű, szám, pont, kötőjel, aláhúzás",
     "password": "Jelszó",
     "invite_code": "Meghívó kód",
     "setup_first_boot": "Első indítás – admin regisztrációs kód:",
@@ -25,13 +30,31 @@
     "register_button": "Regisztráció",
     "register_link": "Már van fiókod? Jelentkezz be",
     "errors": {
+      "identifier_required": "Az e-mail cím vagy felhasználónév megadása kötelező.",
       "email_required": "Az e-mail cím megadása kötelező.",
+      "email_invalid": "Érvénytelen e-mail cím formátum.",
       "password_required": "A jelszó megadása kötelező.",
-      "invalid_credentials": "Hibás e-mail cím vagy jelszó.",
+      "invalid_credentials": "Hibás azonosító vagy jelszó.",
+      "account_banned": "Ez a fiók le van tiltva. Fordulj az adminisztrátorhoz.",
       "email_taken": "Ez az e-mail cím már foglalt.",
+      "username_required": "A felhasználónév megadása kötelező.",
+      "username_invalid": "A felhasználónév 3–30 karakter lehet: betű, szám, pont, kötőjel, aláhúzás.",
+      "username_taken": "Ez a felhasználónév már foglalt.",
       "password_short": "A jelszónak legalább 6 karakteresnek kell lennie.",
       "invite_required": "A meghívó kód megadása kötelező.",
       "invite_invalid": "Érvénytelen vagy már felhasznált meghívó kód."
+    }
+  },
+  "profile": {
+    "change_password_title": "Jelszóváltás",
+    "current_password": "Jelenlegi jelszó",
+    "new_password": "Új jelszó",
+    "confirm_password": "Új jelszó megerősítése",
+    "save_button": "Jelszó módosítása",
+    "password_changed": "A jelszó sikeresen módosítva.",
+    "errors": {
+      "current_wrong": "A megadott jelenlegi jelszó helytelen.",
+      "passwords_mismatch": "A két új jelszó nem egyezik meg."
     }
   },
   "admin": {
@@ -43,7 +66,36 @@
     "all_codes": "Összes kód",
     "no_codes": "Még nincs generált kód.",
     "code_used": "Felhasználva",
-    "code_available": "Szabad"
+    "code_available": "Szabad",
+    "manage_invites_button": "Meghívó kódok kezelése",
+    "settings_title": "Adminisztráció",
+    "settings_section_app": "Alkalmazás beállítások",
+    "save_settings_button": "Beállítások mentése",
+    "settings_saved": "Beállítások elmentve.",
+    "setting_registration_open": "Nyitott regisztráció",
+    "setting_registration_open_desc": "Ha bekapcsolt, bárki regisztrálhat meghívó kód nélkül.",
+    "setting_users_can_create_groups": "Csoportlétrehozás minden usernek",
+    "setting_users_can_create_groups_desc": "Ha ki van kapcsolva, csak adminok hozhatnak létre csoportot.",
+    "users_title": "Felhasználók kezelése",
+    "users_manage_desc": "Felhasználók megtekintése, kitiltása vagy törlése.",
+    "manage_users_button": "Felhasználók kezelése",
+    "user_status": "Státusz",
+    "user_registered": "Regisztrált",
+    "user_actions": "Műveletek",
+    "role_admin": "admin",
+    "status_banned": "Tiltva",
+    "status_active": "Aktív",
+    "ban_button": "Tiltás",
+    "unban_button": "Tiltás feloldása",
+    "delete_button": "Törlés",
+    "user_banned": "A felhasználó le lett tiltva.",
+    "user_unbanned": "A tiltás feloldva.",
+    "user_deleted": "A felhasználó törölve.",
+    "current_user": "(te)",
+    "delete_user_confirm": "Biztosan törlöd ezt a felhasználót? Ez visszavonhatatlan.",
+    "errors": {
+      "cannot_self": "Saját magadat nem tilthatod le vagy törölheted."
+    }
   },
   "dashboard": {
     "title": "Csoportjaim",
@@ -77,7 +129,8 @@
       "name_required": "A csoport nevének megadása kötelező.",
       "not_found": "A csoport nem található.",
       "not_admin": "Csak a csoport adminisztrátora hajthatja ezt végre.",
-      "not_member": "Nem vagy tagja ennek a csoportnak."
+      "not_member": "Nem vagy tagja ennek a csoportnak.",
+      "creation_disabled": "Csoportlétrehozás jelenleg csak adminok számára engedélyezett."
     }
   },
   "event": {
@@ -95,6 +148,8 @@
     "cancel_button": "Mégsem",
     "back_to_group": "← Vissza a csoporthoz",
     "optional": "opcionális",
+    "date_mode_picker": "Dátumválasztó",
+    "date_mode_text": "Szöveges",
     "status": {
       "IDEA": "Ötlet",
       "DISCUSSING": "Egyeztetés alatt",

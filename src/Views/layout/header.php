@@ -32,11 +32,13 @@ $_currentPath = strtok($_SERVER['REQUEST_URI'], '?');
         <?php if ($_navUser): ?>
         <nav class="nav-main">
             <?php if ((int)($_navUser['is_admin'] ?? 0) === 1): ?>
-            <a href="/admin/invites" class="btn-ghost <?= str_starts_with($_currentPath, '/admin') ? 'active' : '' ?>">
+            <a href="/admin/settings" class="btn-ghost <?= str_starts_with($_currentPath, '/admin') ? 'active' : '' ?>">
                 <?= e(Lang::t('nav.admin')) ?>
             </a>
             <?php endif; ?>
-            <span class="nav-email"><?= e($_navUser['email']) ?></span>
+            <a href="/profile/password" class="nav-username btn-ghost <?= str_starts_with($_currentPath, '/profile') ? 'active' : '' ?>">
+                <?= e($_navUser['username'] ?? $_navUser['email']) ?>
+            </a>
             <form method="POST" action="/logout" class="inline-form">
                 <button type="submit" class="btn-ghost"><?= e(Lang::t('nav.logout')) ?></button>
             </form>

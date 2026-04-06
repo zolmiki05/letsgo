@@ -34,7 +34,11 @@ class GroupController
 
     public function createForm(array $params): void
     {
-        requireAuth();
+        $userId = requireAuth();
+        if (!Setting::usersCanCreateGroups() && !User::isAdmin($userId)) {
+            Session::flash('error', Lang::t('group.errors.creation_disabled'));
+            redirect('/');
+        }
         render('group/create', [
             'pageTitle' => Lang::t('group.create_title'),
             'error'     => Session::flash('error'),
@@ -44,6 +48,10 @@ class GroupController
     public function create(array $params): void
     {
         $userId = requireAuth();
+        if (!Setting::usersCanCreateGroups() && !User::isAdmin($userId)) {
+            Session::flash('error', Lang::t('group.errors.creation_disabled'));
+            redirect('/');
+        }
         $name   = trim($_POST['name'] ?? '');
 
         if (!$name) {

@@ -17,6 +17,7 @@ require_once ROOT . '/src/Core/Router.php';
 
 // Models (AppInvite must be loaded before User, as User::create uses it)
 require_once ROOT . '/src/Models/AppInvite.php';
+require_once ROOT . '/src/Models/Setting.php';
 require_once ROOT . '/src/Models/User.php';
 require_once ROOT . '/src/Models/Group.php';
 require_once ROOT . '/src/Models/Invite.php';
@@ -173,6 +174,11 @@ function requireAuth(): int
 {
     $userId = Session::userId();
     if ($userId === null) {
+        // Save the current URL so we can redirect back after login
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        if ($uri !== '/login' && $uri !== '/logout') {
+            Session::set('redirect_after_login', $uri);
+        }
         redirect('/login');
     }
     return $userId;

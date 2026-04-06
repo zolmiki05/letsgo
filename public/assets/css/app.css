@@ -963,3 +963,91 @@ h1, h2, h3, h4 {
   .group-layout { grid-template-columns: 1fr 310px; }
   .event-layout { grid-template-columns: 1fr 290px; }
 }
+
+/* ── Admin user table ───────────────────────────────────────── */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+.admin-table th {
+  text-align: left;
+  padding: .5rem .75rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.admin-table td {
+  padding: .65rem .75rem;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+.admin-table tr:last-child td { border-bottom: none; }
+.row-banned td { color: var(--text-light); }
+.row-banned td:first-child { text-decoration: line-through; }
+.action-cell { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+
+/* ── Badges ─────────────────────────────────────────────────── */
+.badge-banned  { background: #FFF1F2; color: #9F1239; }
+.badge-used    { background: var(--surface-alt); color: var(--text-muted); }
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn-warning {
+  background: #F59E0B; color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  padding: .35rem .875rem; font-size: .8125rem;
+  cursor: pointer; font-weight: 600; transition: background var(--transition);
+}
+.btn-warning:hover { background: #D97706; }
+
+/* ── Settings toggles ───────────────────────────────────────── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .875rem 0;
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer;
+}
+.toggle-row:last-of-type { border-bottom: none; }
+.toggle-info { display: flex; flex-direction: column; gap: .2rem; }
+.toggle-label { font-weight: 600; color: var(--text); }
+.toggle-desc  { font-size: .85rem; }
+.toggle-checkbox {
+  width: 2.5rem; height: 1.375rem;
+  appearance: none; -webkit-appearance: none;
+  background: var(--border); border-radius: 999px;
+  position: relative; cursor: pointer; transition: background var(--transition);
+  flex-shrink: 0;
+}
+.toggle-checkbox::before {
+  content: '';
+  position: absolute; top: .1875rem; left: .1875rem;
+  width: 1rem; height: 1rem;
+  border-radius: 50%; background: #fff;
+  transition: transform var(--transition);
+}
+.toggle-checkbox:checked { background: var(--accent); }
+.toggle-checkbox:checked::before { transform: translateX(1.125rem); }
+
+/* ── Date mode toggle ───────────────────────────────────────── */
+.date-mode-toggle {
+  display: flex; gap: .75rem;
+  margin-bottom: .4rem;
+  font-size: .8rem;
+}
+.date-mode-label {
+  display: flex; align-items: center; gap: .3rem;
+  color: var(--text-muted); cursor: pointer;
+}
+.date-mode-label input[type=radio] { accent-color: var(--accent); }
+
+/* ── Field hint ─────────────────────────────────────────────── */
+.field-hint { display: block; font-size: .78rem; color: var(--text-light); margin-top: .25rem; }
+
+/* ── Nav username ───────────────────────────────────────────── */
+.nav-username { font-weight: 600; }

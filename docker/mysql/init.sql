@@ -11,8 +11,11 @@ USE letsgo;
 CREATE TABLE users (
     id            INT UNSIGNED     AUTO_INCREMENT PRIMARY KEY,
     email         VARCHAR(255)     NOT NULL UNIQUE,
+    username      VARCHAR(50)      NULL UNIQUE,
     password_hash VARCHAR(255)     NOT NULL,
-    is_admin      TINYINT(1)       NOT NULL DEFAULT 0
+    is_admin      TINYINT(1)       NOT NULL DEFAULT 0,
+    is_banned     TINYINT(1)       NOT NULL DEFAULT 0,
+    created_at    DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- App-level invite codes (required for registration) -----------------------
@@ -62,23 +65,36 @@ CREATE TABLE invites (
 
 -- Events (programme ideas) ------------------------------------------------
 CREATE TABLE events (
-    id                INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    group_id          INT UNSIGNED NOT NULL,
-    creator_id        INT UNSIGNED NOT NULL,
-    title             VARCHAR(255) NOT NULL,
-    description       TEXT,
-    location          VARCHAR(255),
-    date_text         VARCHAR(255),
-    deadline_signup   DATE,
-    deadline_decision DATE,
-    cost              VARCHAR(100),
-    notes             TEXT,
-    status            ENUM('IDEA','DISCUSSING','FINAL','CANCELLED') NOT NULL DEFAULT 'IDEA',
-    created_at        DATETIME NOT NULL,
-    updated_at        DATETIME NOT NULL,
+    id                      INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    group_id                INT UNSIGNED NOT NULL,
+    creator_id              INT UNSIGNED NOT NULL,
+    title                   VARCHAR(255) NOT NULL,
+    description             TEXT,
+    location                VARCHAR(255),
+    event_date              DATE,
+    date_text               VARCHAR(255),
+    deadline_signup         DATE,
+    deadline_signup_text    VARCHAR(100),
+    deadline_decision       DATE,
+    deadline_decision_text  VARCHAR(100),
+    cost                    VARCHAR(100),
+    notes                   TEXT,
+    status                  ENUM('IDEA','DISCUSSING','FINAL','CANCELLED') NOT NULL DEFAULT 'IDEA',
+    created_at              DATETIME NOT NULL,
+    updated_at              DATETIME NOT NULL,
     FOREIGN KEY (group_id)   REFERENCES `groups`(id) ON DELETE CASCADE,
     FOREIGN KEY (creator_id) REFERENCES users(id)    ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- App settings (key-value) ------------------------------------------------
+CREATE TABLE settings (
+    `key`   VARCHAR(100) NOT NULL PRIMARY KEY,
+    value   VARCHAR(255) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO settings (`key`, value) VALUES
+    ('registration_open',      '0'),
+    ('users_can_create_groups','1');
 
 -- Responses (per-user feedback on an event) --------------------------------
 CREATE TABLE responses (
