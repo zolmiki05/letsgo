@@ -1,0 +1,146 @@
+{
+  "app": {
+    "name": "Letsgo",
+    "tagline": "Mi legyen a következő közös program?"
+  },
+  "nav": {
+    "dashboard": "Főoldal",
+    "logout": "Kilépés",
+    "login": "Belépés",
+    "register": "Regisztráció",
+    "admin": "Admin"
+  },
+  "auth": {
+    "email": "E-mail cím",
+    "password": "Jelszó",
+    "invite_code": "Meghívó kód",
+    "setup_first_boot": "Első indítás – admin regisztrációs kód:",
+    "setup_register_now": "Admin fiók létrehozása →",
+    "login_title": "Üdv újra!",
+    "login_subtitle": "Jelentkezz be a fiókodba",
+    "login_button": "Belépés",
+    "login_link": "Nincs még fiókod? Regisztrálj",
+    "register_title": "Csatlakozz!",
+    "register_subtitle": "Hozz létre egy új fiókot",
+    "register_button": "Regisztráció",
+    "register_link": "Már van fiókod? Jelentkezz be",
+    "errors": {
+      "email_required": "Az e-mail cím megadása kötelező.",
+      "password_required": "A jelszó megadása kötelező.",
+      "invalid_credentials": "Hibás e-mail cím vagy jelszó.",
+      "email_taken": "Ez az e-mail cím már foglalt.",
+      "password_short": "A jelszónak legalább 6 karakteresnek kell lennie.",
+      "invite_required": "A meghívó kód megadása kötelező.",
+      "invite_invalid": "Érvénytelen vagy már felhasznált meghívó kód."
+    }
+  },
+  "admin": {
+    "invites_title": "Meghívó kódok",
+    "generate_title": "Új kód generálása",
+    "generate_desc": "Minden kód egyszeri felhasználású. Oszd meg az illetővel, hogy regisztrálni tudjon.",
+    "generate_button": "Kód generálása",
+    "invite_generated": "Új meghívó kód generálva.",
+    "all_codes": "Összes kód",
+    "no_codes": "Még nincs generált kód.",
+    "code_used": "Felhasználva",
+    "code_available": "Szabad"
+  },
+  "dashboard": {
+    "title": "Csoportjaim",
+    "no_groups": "Még nincs egy csoportod sem.",
+    "create_group": "Új csoport",
+    "members_count": "tag",
+    "upcoming_deadlines": "Közelgő határidők",
+    "no_deadlines": "Nincs közelgő határidő a következő 7 napban.",
+    "deadline_signup": "Jelentkezési határidő",
+    "deadline_decision": "Döntési határidő"
+  },
+  "group": {
+    "create_title": "Új csoport",
+    "name_label": "Csoport neve",
+    "create_button": "Létrehozás",
+    "delete_button": "Csoport törlése",
+    "delete_confirm": "Biztosan törölni szeretnéd a csoportot? Ez a művelet nem visszavonható.",
+    "invite_title": "Meghívó link",
+    "invite_generate": "Meghívó generálása",
+    "invite_copy": "Másolás",
+    "invite_copied": "Másolva!",
+    "invite_expires": "Lejár:",
+    "invite_expired": "Lejárt",
+    "invite_active": "Aktív meghívó",
+    "new_event": "Új programötlet",
+    "no_events": "Még nincs programötlet ebben a csoportban.",
+    "members_title": "Tagok",
+    "admin_label": "admin",
+    "events_title": "Programötletek",
+    "errors": {
+      "name_required": "A csoport nevének megadása kötelező.",
+      "not_found": "A csoport nem található.",
+      "not_admin": "Csak a csoport adminisztrátora hajthatja ezt végre.",
+      "not_member": "Nem vagy tagja ennek a csoportnak."
+    }
+  },
+  "event": {
+    "create_title": "Új programötlet",
+    "field_title": "Cím",
+    "field_description": "Leírás",
+    "field_location": "Helyszín",
+    "field_date": "Dátum",
+    "field_deadline_signup": "Jelentkezési határidő",
+    "field_deadline_decision": "Döntési határidő",
+    "field_cost": "Becsült költség",
+    "field_notes": "Megjegyzések / feltételek",
+    "field_status": "Státusz",
+    "save_button": "Mentés",
+    "cancel_button": "Mégsem",
+    "back_to_group": "← Vissza a csoporthoz",
+    "optional": "opcionális",
+    "status": {
+      "IDEA": "Ötlet",
+      "DISCUSSING": "Egyeztetés alatt",
+      "FINAL": "Véglegesítve",
+      "CANCELLED": "Lemondva"
+    },
+    "feedback_title": "Visszajelzések",
+    "feedback_your": "A te visszajelzésed",
+    "feedback_interest": "Mennyire érdekel alapesetben",
+    "feedback_mood": "Mennyire van most kedvem hozzá",
+    "feedback_willingness": "Mennyire szívesen mennék",
+    "feedback_save": "Visszajelzés mentése",
+    "feedback_saved": "Visszajelzésed elmentve!",
+    "feedback_average": "Csoportátlag",
+    "feedback_responses_count": "visszajelzés",
+    "feedback_no_responses": "Még nincs visszajelzés.",
+    "feedback_modify": "Visszajelzés módosítása",
+    "delete_button": "Ötlet törlése",
+    "delete_confirm": "Biztosan törölni szeretnéd ezt a programötletet? Ez a művelet nem visszavonható.",
+    "created_by": "Létrehozta",
+    "update_status": "Státusz módosítása",
+    "details": "Részletek",
+    "no_description": "Nincs leírás.",
+    "errors": {
+      "title_required": "A cím megadása kötelező.",
+      "not_found": "A programötlet nem található.",
+      "not_creator": "Csak a létrehozó módosíthatja a státuszt.",
+      "invalid_feedback": "Érvénytelen visszajelzési értékek (1–10 között kell lenniük)."
+    }
+  },
+  "invite": {
+    "title": "Meghívó",
+    "subtitle": "Csatlakozol a csoporthoz",
+    "join_button": "Csatlakozás",
+    "already_member": "Már tagja vagy ennek a csoportnak.",
+    "go_to_group": "Ugrás a csoporthoz",
+    "errors": {
+      "invalid_token": "Érvénytelen meghívó link.",
+      "expired_token": "Ez a meghívó link lejárt.",
+      "not_found": "A meghívó nem található."
+    }
+  },
+  "errors": {
+    "404_title": "Az oldal nem található",
+    "404_text": "Ez az oldal nem létezik vagy eltávolítottuk.",
+    "back_home": "Vissza a főoldalra",
+    "unauthorized": "Nincs jogosultságod ehhez a művelethez."
+  }
+}
