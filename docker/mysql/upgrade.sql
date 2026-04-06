@@ -1,22 +1,69 @@
 -- Letsgo upgrade migration
--- Run this on existing databases to apply the new features.
--- Safe to run multiple times (uses IF NOT EXISTS / IGNORE).
+-- Compatible with MySQL 5.7+ and 8.x (no MariaDB-only syntax).
+-- Safe to run multiple times.
 
 USE letsgo;
 
--- 1. Users: username + is_banned
-ALTER TABLE users
-    ADD COLUMN IF NOT EXISTS username   VARCHAR(50)  NULL UNIQUE AFTER email,
-    ADD COLUMN IF NOT EXISTS is_banned  TINYINT(1)   NOT NULL DEFAULT 0 AFTER is_admin,
-    ADD COLUMN IF NOT EXISTS created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER is_banned;
+-- ── Helper: add column only if it does not already exist ─────────────────────
 
--- 2. Events: event_date + text alternatives for deadlines
-ALTER TABLE events
-    ADD COLUMN IF NOT EXISTS event_date             DATE         NULL AFTER location,
-    ADD COLUMN IF NOT EXISTS deadline_signup_text   VARCHAR(100) NULL AFTER deadline_signup,
-    ADD COLUMN IF NOT EXISTS deadline_decision_text VARCHAR(100) NULL AFTER deadline_decision;
+SET @db = DATABASE();
 
--- 3. Settings table
+-- users.username
+SET @col = 'username';
+SELECT COUNT(*) INTO @exists FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'users' AND COLUMN_NAME = @col;
+SET @sql = IF(@exists = 0,
+  'ALTER TABLE users ADD COLUMN username VARCHAR(50) NULL UNIQUE AFTER email',
+  'SELECT "users.username already exists"');
+PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- users.is_banned
+SET @col = 'is_banned';
+SELECT COUNT(*) INTO @exists FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'users' AND COLUMN_NAME = @col;
+SET @sql = IF(@exists = 0,
+  'ALTER TABLE users ADD COLUMN is_banned TINYINT(1) NOT NULL DEFAULT 0 AFTER is_admin',
+  'SELECT "users.is_banned already exists"');
+PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- users.created_at
+SET @col = 'created_at';
+SELECT COUNT(*) INTO @exists FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'users' AND COLUMN_NAME = @col;
+SET @sql = IF(@exists = 0,
+  'ALTER TABLE users ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER is_banned',
+  'SELECT "users.created_at already exists"');
+PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- events.event_date
+SET @col = 'event_date';
+SELECT COUNT(*) INTO @exists FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'events' AND COLUMN_NAME = @col;
+SET @sql = IF(@exists = 0,
+  'ALTER TABLE events ADD COLUMN event_date DATE NULL AFTER location',
+  'SELECT "events.event_date already exists"');
+PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- events.deadline_signup_text
+SET @col = 'deadline_signup_text';
+SELECT COUNT(*) INTO @exists FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'events' AND COLUMN_NAME = @col;
+SET @sql = IF(@exists = 0,
+  'ALTER TABLE events ADD COLUMN deadline_signup_text VARCHAR(100) NULL AFTER deadline_signup',
+  'SELECT "events.deadline_signup_text already exists"');
+PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- events.deadline_decision_text
+SET @col = 'deadline_decision_text';
+SELECT COUNT(*) INTO @exists FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'events' AND COLUMN_NAME = @col;
+SET @sql = IF(@exists = 0,
+  'ALTER TABLE events ADD COLUMN deadline_decision_text VARCHAR(100) NULL AFTER deadline_decision',
+  'SELECT "events.deadline_decision_text already exists"');
+PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- ── Settings table ────────────────────────────────────────────────────────────
+
 CREATE TABLE IF NOT EXISTS settings (
     `key`   VARCHAR(100) NOT NULL PRIMARY KEY,
     value   VARCHAR(255) NOT NULL DEFAULT ''
