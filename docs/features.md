@@ -1,6 +1,6 @@
 # Features
 
-Complete feature reference for Letsgo v1.0.2.
+Complete feature reference for Letsgo v1.0.3.
 
 ---
 
@@ -42,6 +42,10 @@ Complete feature reference for Letsgo v1.0.2.
 - Each event card shows **who added it** (username, or email if the user has no username).
 - Shows the **member list** with the owner highlighted.
 - Owner-only section: **invite link management** and **delete group**.
+
+### Renaming a Group
+- Only the group owner can rename a group.
+- An inline form in the owner sidebar pre-fills the current name; submitting updates it immediately.
 
 ### Deleting a Group
 - Only the group owner can delete a group.

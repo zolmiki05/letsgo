@@ -34,6 +34,7 @@ $router->post('/admin/users/{id}/delete', 'AdminController@deleteUser');
 $router->get('/groups/create',           'GroupController@createForm');
 $router->post('/groups/create',          'GroupController@create');
 $router->get('/groups/{id}',             'GroupController@show');
+$router->post('/groups/{id}/rename',     'GroupController@rename');
 $router->post('/groups/{id}/delete',     'GroupController@delete');
 $router->post('/groups/{id}/invite',     'GroupController@generateInvite');
 

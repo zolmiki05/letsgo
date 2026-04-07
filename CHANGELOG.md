@@ -5,6 +5,17 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.0.3] – 2026-04-07
+
+### Added
+- **Group rename** — the group owner can rename the group from an inline form in the sidebar (`POST /groups/{id}/rename`).
+
+### Fixed
+- **Event card creator alignment** — "Hozzáadta" is now a `flex-basis: 100%` span inside the meta flex container, guaranteeing identical left alignment with the date/location row above it.
+- **Success flash messages** — group page now displays the actual flash message text instead of a hardcoded invite string, so rename and invite confirmations both show correctly.
+
+---
+
 ## [1.0.2] – 2026-04-07
 
 ### Added

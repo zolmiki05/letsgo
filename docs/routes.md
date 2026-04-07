@@ -49,6 +49,7 @@ that become named captures extracted into the `$params` array passed to the cont
 | GET | `/groups/create` | `GroupController@createForm` | User* | New group form |
 | POST | `/groups/create` | `GroupController@create` | User* | Create group |
 | GET | `/groups/{id}` | `GroupController@show` | Member | Group detail |
+| POST | `/groups/{id}/rename` | `GroupController@rename` | Owner | Rename group |
 | POST | `/groups/{id}/delete` | `GroupController@delete` | Owner | Delete group |
 | POST | `/groups/{id}/invite` | `GroupController@generateInvite` | Owner | Generate 24h join link |
 
