@@ -1,6 +1,6 @@
 # Features
 
-Complete feature reference for Letsgo v1.0.1.
+Complete feature reference for Letsgo v1.0.2.
 
 ---
 
@@ -164,6 +164,7 @@ The three scales are intentionally separate to help groups distinguish between
 
 ## UI / UX
 
+- **SVG favicon** — blue rounded-square icon with a right-pointing arrow, served from `/assets/favicon.svg`.
 - **Dark/light theme toggle** — preference saved to `localStorage`.
 - **Invite link copy button** — uses Clipboard API with a "Copied!" confirmation.
 - **Feedback sliders** — range inputs with live value display.

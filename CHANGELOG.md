@@ -5,6 +5,16 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.0.2] – 2026-04-07
+
+### Added
+- **SVG favicon** (`/assets/favicon.svg`) — blue rounded-square with a white right-pointing arrow; linked via `<link rel="icon">` in the layout header.
+
+### Fixed
+- **Event card creator alignment** — "Hozzáadta" row now uses `display: flex; align-items: center` matching the meta row, so the left edge lines up correctly with the title and date fields.
+
+---
+
 ## [1.0.1] – 2026-04-07
 
 ### Added
