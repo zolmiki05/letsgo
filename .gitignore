@@ -1,0 +1,22 @@
+# Docker volumes
+docker/mysql/data/
+
+# Runtime storage (logs, setup output) – keep the directory, ignore contents
+storage/*
+!storage/.gitkeep
+
+# Environment – never commit real credentials
+.env
+
+# PHP
+*.log
+*.cache
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp

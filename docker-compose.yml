@@ -1,0 +1,43 @@
+services:
+  app:
+    build: ./docker/php
+    container_name: letsgo_app
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false        # allow running without a .env (uses defaults)
+    environment:
+      DB_HOST:     ${DB_HOST:-db}
+      DB_NAME:     ${DB_NAME:-letsgo}
+      DB_USER:     ${DB_USER:-letsgo}
+      DB_PASS:     ${DB_PASS:-change_me_in_production}
+      APP_URL:     ${APP_URL:-}
+
+  db:
+    image: mysql:8.0
+    container_name: letsgo_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE:      ${DB_NAME:-letsgo}
+      MYSQL_USER:          ${DB_USER:-letsgo}
+      MYSQL_PASSWORD:      ${DB_PASS:-change_me_in_production}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-change_root_in_production}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost",
+             "-u", "${DB_USER:-letsgo}", "-p${DB_PASS:-change_me_in_production}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:

@@ -1,93 +1,147 @@
-# letsgo
+# Letsgo
 
+> **What should the next group activity be?**
 
+Letsgo is a web application for friend groups, teams, and communities to collect programme ideas, rate them as a group, and collaboratively decide what to do next.
 
-## Getting started
+**Version:** 1.0.0 · **Primary repo:** GitLab · **GitHub:** read-only mirror
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+---
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Features
 
-## Add your files
+- **Accounts** — invite-code-gated or open registration; login by email or username
+- **Groups** — create groups, invite members via 24-hour links, manage membership
+- **Programme ideas** — propose events with title, description, location, date, deadlines, cost, notes
+- **Flexible dates** — each date field accepts either a date picker or free text ("next weekend", "TBD")
+- **Three-scale feedback** — rate each idea on Interest / Mood / Willingness (1–10); group averages shown as progress bars
+- **Status lifecycle** — Idea → Discussing → Final / Cancelled (creator-managed)
+- **Upcoming deadlines** — dashboard widget for events with deadlines in the next 7 days
+- **Admin panel** — user management (ban/unban/delete), registration toggle, group-creation toggle, invite code management
+- **Password change** — logged-in users can update their password
+- **Invite link persistence** — unauthenticated users who follow a group invite link are redirected back after login
+- **Dark/light theme** — toggle with `localStorage` persistence
+- **Hungarian UI** — all strings in `lang/hu.json`; easily translatable
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | PHP 8.2 (no framework) |
+| Database | MySQL 8.x |
+| Frontend | HTML5 + CSS3 + vanilla JS |
+| Auth | PHP sessions |
+| Container | Docker + Docker Compose |
+
+---
+
+## Quick Start
+
+```bash
+# Clone
+git clone <repo-url> letsgo && cd letsgo
+
+# Configure (adjust DB passwords at minimum)
+cp .env.example .env
+
+# Start
+docker compose up -d
+
+# Open
+open http://localhost:8080
+```
+
+On first start the **setup invite code** appears on the login page — use it to create the first admin account.
+
+To stop:
+```bash
+docker compose down          # keep data
+docker compose down -v       # also delete DB volume
+```
+
+---
+
+## Upgrading an Existing Database
+
+```bash
+docker exec -i letsgo_db mysql -u root -p<password> < docker/mysql/upgrade.sql
+```
+
+The script is idempotent (safe to run multiple times).
+
+---
+
+## Project Structure
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.zolmiki.dev/zolmiki/letsgo.git
-git branch -M main
-git push -uf origin main
+letsgo/
+├── docker/
+│   ├── mysql/
+│   │   ├── init.sql        # Schema (fresh install)
+│   │   └── upgrade.sql     # Migration (existing DB)
+│   └── php/Dockerfile      # PHP 8.2 + Apache
+├── docs/                   # Full documentation (wiki-ready)
+├── lang/hu.json            # All UI strings (Hungarian)
+├── public/                 # Apache document root
+│   ├── index.php           # Front controller
+│   ├── .htaccess           # mod_rewrite rules
+│   └── assets/css & js
+├── src/
+│   ├── bootstrap.php       # Loader + global helpers
+│   ├── Core/               # Database, Session, Lang, Router
+│   ├── Models/             # User, Group, Invite, AppInvite, Event, Response, Setting
+│   ├── Controllers/        # Auth, Admin, Dashboard, Group, Event, Invite
+│   └── Views/              # PHP templates (layout + per-feature)
+├── storage/                # Writable at runtime (setup log)
+├── CHANGELOG.md
+├── VERSION
+└── docker-compose.yml
 ```
 
-## Integrate with your tools
+---
 
-* [Set up project integrations](https://gitlab.zolmiki.dev/zolmiki/letsgo/-/settings/integrations)
+## Documentation
 
-## Collaborate with your team
+Full documentation lives in the [`docs/`](docs/) directory:
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+| Doc | Contents |
+|---|---|
+| [Installation](docs/installation.md) | Docker setup, env vars, production checklist |
+| [Architecture](docs/architecture.md) | Stack, request lifecycle, security model |
+| [Database](docs/database.md) | Schema reference, ERD, migrations |
+| [Routes](docs/routes.md) | All endpoints and access levels |
+| [Features](docs/features.md) | Detailed feature descriptions |
+| [Admin Guide](docs/admin-guide.md) | Admin panel walkthrough |
 
-## Test and Deploy
+---
 
-Use the built-in continuous integration in GitLab.
+## Localisation
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+1. Copy `lang/hu.json` → `lang/en.json` (or any locale)
+2. Translate the values (keys must stay identical)
+3. Change `Lang::load(ROOT . '/lang/hu.json')` in `src/bootstrap.php` to the new file
 
-***
+---
 
-# Editing this README
+## Permissions Summary
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+| Action | Who |
+|---|---|
+| Create a group | Any user (unless admin-restricted) |
+| Delete a group | Group owner |
+| Generate invite link | Group owner |
+| Join a group | Any authenticated user with a valid token |
+| Create a programme idea | Any group member |
+| Change status / delete idea | Creator only |
+| Submit / update feedback | Any group member |
+| Admin panel | Admin accounts only |
+| Ban / delete users | Admin only |
 
-## Suggestions for a good README
+---
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## Development
 
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Primary repository is on **GitLab**; GitHub is a read-only mirror.
+Feature work happens on the `development` branch.
