@@ -5,6 +5,19 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.0.1] – 2026-04-07
+
+### Added
+- **Creator attribution on event cards** — each programme idea card in the group view now shows who added it (username if set, otherwise email).
+- **Event editing** — the event creator can edit all fields of a programme idea (title, description, location, date, deadlines, cost, notes) via a new `/events/{id}/edit` page.
+  - The edit form pre-fills all current values, including the correct date/text mode for each date field.
+  - Access is restricted to the creator; other members receive a flash error and are redirected.
+
+### Changed
+- `Event::forGroup()` now also returns `creator_username` alongside the existing `creator_email`.
+
+---
+
 ## [1.0.0] – 2026-04-07
 
 ### Added

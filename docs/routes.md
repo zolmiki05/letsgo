@@ -63,6 +63,8 @@ that become named captures extracted into the `$params` array passed to the cont
 | GET | `/groups/{id}/events/create` | `EventController@createForm` | Member | New event form |
 | POST | `/groups/{id}/events/create` | `EventController@create` | Member | Submit event |
 | GET | `/events/{id}` | `EventController@show` | Member | Event detail + feedback |
+| GET | `/events/{id}/edit` | `EventController@editForm` | Creator | Edit event form |
+| POST | `/events/{id}/edit` | `EventController@edit` | Creator | Submit edited event |
 | POST | `/events/{id}/delete` | `EventController@delete` | Creator | Delete event |
 | POST | `/events/{id}/status` | `EventController@updateStatus` | Creator | Change status |
 | POST | `/events/{id}/feedback` | `EventController@saveFeedback` | Member | Submit/update rating |

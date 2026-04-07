@@ -49,6 +49,10 @@
                     <span>· <?= e($ev['location']) ?></span>
                     <?php endif; ?>
                 </div>
+                <div class="event-card-creator">
+                    <?= e(Lang::t('event.added_by')) ?>:
+                    <span><?= e($ev['creator_username'] ?? $ev['creator_email']) ?></span>
+                </div>
             </a>
             <?php endforeach; ?>
         </div>

@@ -41,6 +41,8 @@ $router->post('/groups/{id}/invite',     'GroupController@generateInvite');
 $router->get('/groups/{id}/events/create',  'EventController@createForm');
 $router->post('/groups/{id}/events/create', 'EventController@create');
 $router->get('/events/{id}',                'EventController@show');
+$router->get('/events/{id}/edit',           'EventController@editForm');
+$router->post('/events/{id}/edit',          'EventController@edit');
 $router->post('/events/{id}/delete',        'EventController@delete');
 $router->post('/events/{id}/status',        'EventController@updateStatus');
 $router->post('/events/{id}/feedback',      'EventController@saveFeedback');

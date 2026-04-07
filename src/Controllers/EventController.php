@@ -6,6 +6,8 @@
  *   GET  /groups/{id}/events/create  → createForm()    Show the new-event form
  *   POST /groups/{id}/events/create  → create()        Submit a new event
  *   GET  /events/{id}                → show()          Event detail with feedback
+ *   GET  /events/{id}/edit           → editForm()      Show edit form (creator only)
+ *   POST /events/{id}/edit           → edit()          Submit edited event (creator only)
  *   POST /events/{id}/delete         → delete()        Delete event (creator only)
  *   POST /events/{id}/status         → updateStatus()  Change status (creator only)
  *   POST /events/{id}/feedback       → saveFeedback()  Submit/update 3-scale rating
@@ -13,7 +15,7 @@
  * Access rules:
  *   - createForm/create: user must be a group member.
  *   - show/saveFeedback: user must be a group member.
- *   - delete/updateStatus: user must be the event creator.
+ *   - editForm/edit/delete/updateStatus: user must be the event creator.
  *
  * Date handling:
  *   Each of the three date fields (event_date/date_text, deadline_signup/
@@ -152,6 +154,90 @@ class EventController
             'error'     => Session::flash('error'),
             'success'   => Session::flash('success'),
         ]);
+    }
+
+    // ── Edit ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Display the event edit form (creator only).
+     * Pre-fills all fields with the current event data.
+     */
+    public function editForm(array $params): void
+    {
+        $userId  = requireAuth();
+        $eventId = (int)$params['id'];
+        $event   = Event::findById($eventId);
+
+        if (!$event) {
+            http_response_code(404);
+            render('errors/404', ['pageTitle' => '404']);
+            return;
+        }
+
+        if ((int)$event['creator_id'] !== $userId) {
+            Session::flash('error', Lang::t('event.errors.not_creator'));
+            redirect('/events/' . $eventId);
+        }
+
+        render('event/edit', [
+            'pageTitle' => Lang::t('event.edit_title'),
+            'event'     => $event,
+            'group'     => Group::findById((int)$event['group_id']),
+            'error'     => Session::flash('error'),
+        ]);
+    }
+
+    /**
+     * Process the event edit form submission (creator only).
+     * Applies the same date-mode resolution logic as create().
+     */
+    public function edit(array $params): void
+    {
+        $userId  = requireAuth();
+        $eventId = (int)$params['id'];
+        $event   = Event::findById($eventId);
+
+        if (!$event) redirect('/');
+
+        if ((int)$event['creator_id'] !== $userId) {
+            Session::flash('error', Lang::t('event.errors.not_creator'));
+            redirect('/events/' . $eventId);
+        }
+
+        $title = trim($_POST['title'] ?? '');
+        if (!$title) {
+            Session::flash('error', Lang::t('event.errors.title_required'));
+            redirect('/events/' . $eventId . '/edit');
+        }
+
+        $dateMode  = $_POST['date_mode'] ?? 'text';
+        $eventDate = ($dateMode === 'date') ? ($_POST['event_date'] ?? '') : '';
+        $dateText  = ($dateMode === 'text') ? trim($_POST['date_text'] ?? '') : '';
+
+        $dlSignupMode = $_POST['deadline_signup_mode'] ?? 'date';
+        $dlSignup     = ($dlSignupMode === 'date') ? ($_POST['deadline_signup']     ?? '') : '';
+        $dlSignupTxt  = ($dlSignupMode === 'text') ? trim($_POST['deadline_signup_text'] ?? '') : '';
+
+        $dlDecMode  = $_POST['deadline_decision_mode'] ?? 'date';
+        $dlDecision = ($dlDecMode === 'date') ? ($_POST['deadline_decision']     ?? '') : '';
+        $dlDecTxt   = ($dlDecMode === 'text') ? trim($_POST['deadline_decision_text'] ?? '') : '';
+
+        Event::update($eventId, [
+            'title'                   => $title,
+            'description'             => trim($_POST['description'] ?? ''),
+            'location'                => trim($_POST['location'] ?? ''),
+            'event_date'              => $eventDate,
+            'date_text'               => $dateText,
+            'deadline_signup'         => $dlSignup,
+            'deadline_signup_text'    => $dlSignupTxt,
+            'deadline_decision'       => $dlDecision,
+            'deadline_decision_text'  => $dlDecTxt,
+            'cost'                    => trim($_POST['cost'] ?? ''),
+            'notes'                   => trim($_POST['notes'] ?? ''),
+        ]);
+
+        Session::flash('success', Lang::t('event.edit_saved'));
+        redirect('/events/' . $eventId);
     }
 
     // ── Delete ────────────────────────────────────────────────────────────────

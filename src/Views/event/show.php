@@ -74,6 +74,11 @@
         <!-- Creator actions -->
         <?php if ($isCreator): ?>
         <div class="card">
+            <a href="/events/<?= (int)$event['id'] ?>/edit" class="btn btn-outline btn-full">
+                <?= e(Lang::t('event.edit_button')) ?>
+            </a>
+        </div>
+        <div class="card">
             <h2 class="card-title"><?= e(Lang::t('event.update_status')) ?></h2>
             <form method="POST" action="/events/<?= (int)$event['id'] ?>/status" class="status-form">
                 <div class="status-options">

@@ -56,7 +56,7 @@ class Event
     {
         $db   = Database::getInstance();
         $stmt = $db->prepare(
-            'SELECT e.*, u.email AS creator_email
+            'SELECT e.*, u.email AS creator_email, u.username AS creator_username
              FROM events e
              JOIN users u ON u.id = e.creator_id
              WHERE e.group_id = ?
@@ -112,6 +112,51 @@ class Event
             $data['notes']                  ?: null,
         ]);
         return (int)$db->lastInsertId();
+    }
+
+    /**
+     * Update an existing event's editable fields.
+     *
+     * All optional fields are passed as null when empty.
+     * Does NOT change creator_id, group_id, status, or created_at.
+     *
+     * Expected keys in $data (same as create, minus group_id/creator_id):
+     *   title, description, location,
+     *   event_date, date_text,
+     *   deadline_signup, deadline_signup_text,
+     *   deadline_decision, deadline_decision_text,
+     *   cost, notes
+     *
+     * @param int   $id    Event ID to update.
+     * @param array $data  Associative array of field values.
+     */
+    public static function update(int $id, array $data): void
+    {
+        $db   = Database::getInstance();
+        $stmt = $db->prepare(
+            'UPDATE events SET
+               title = ?, description = ?, location = ?,
+               event_date = ?, date_text = ?,
+               deadline_signup = ?, deadline_signup_text = ?,
+               deadline_decision = ?, deadline_decision_text = ?,
+               cost = ?, notes = ?,
+               updated_at = NOW()
+             WHERE id = ?'
+        );
+        $stmt->execute([
+            $data['title'],
+            $data['description']            ?: null,
+            $data['location']               ?: null,
+            $data['event_date']             ?: null,
+            $data['date_text']              ?: null,
+            $data['deadline_signup']        ?: null,
+            $data['deadline_signup_text']   ?: null,
+            $data['deadline_decision']      ?: null,
+            $data['deadline_decision_text'] ?: null,
+            $data['cost']                   ?: null,
+            $data['notes']                  ?: null,
+            $id,
+        ]);
     }
 
     /**
