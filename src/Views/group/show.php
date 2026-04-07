@@ -41,8 +41,9 @@
                     </span>
                 </div>
                 <div class="event-card-meta">
-                    <?php if ($ev['date_text']): ?>
-                    <span><?= e($ev['date_text']) ?></span>
+                    <?php $evDate = $ev['event_date'] ? fmtDate($ev['event_date']) : ($ev['date_text'] ?? ''); ?>
+                    <?php if ($evDate): ?>
+                    <span><?= e($evDate) ?></span>
                     <?php endif; ?>
                     <?php if ($ev['location']): ?>
                     <span>· <?= e($ev['location']) ?></span>

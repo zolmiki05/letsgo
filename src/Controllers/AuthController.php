@@ -1,21 +1,63 @@
 <?php
 /**
- * AuthController – registration, login, logout, and password change.
+ * AuthController – account registration, login, logout, and password management.
+ *
+ * Route summary:
+ *   GET  /login           → loginForm()        Show the login page
+ *   POST /login           → login()            Process credentials
+ *   GET  /register        → registerForm()     Show the registration page
+ *   POST /register        → register()         Create a new account
+ *   POST /logout          → logout()           Destroy the session
+ *   GET  /profile/password → passwordForm()    Show the password-change form
+ *   POST /profile/password → changePassword()  Process the password change
+ *
+ * Registration modes:
+ *   1. Invite-only (default): a valid AppInvite code is required.
+ *   2. Open: no code required (admin enables via Setting 'registration_open').
+ *   The first-ever account always requires a code (system-generated setup code)
+ *   and is automatically granted admin rights.
+ *
+ * Login:
+ *   The identifier field accepts either an email address or a username.
+ *   Banned accounts receive a specific error message.
+ *
+ * Invite link preservation:
+ *   If an unauthenticated user follows a group invite link (/join?token=…),
+ *   requireAuth() saves the URL to session['redirect_after_login']. After
+ *   a successful login, the user is redirected back to the invite link
+ *   instead of the dashboard.
  */
 class AuthController
 {
+    // ── Login ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Display the login form.
+     * Redirects already-authenticated users to the dashboard.
+     * Shows the first-boot setup code banner when no users exist yet.
+     */
     public function loginForm(array $params): void
     {
         if (Session::userId()) redirect('/');
+
         render('auth/login', [
             'pageTitle'  => Lang::t('auth.login_title'),
             'error'      => Session::flash('error'),
-            'setupToken' => self::getSetupToken(),
+            'setupToken' => self::getSetupToken(), // null when users already exist
         ]);
     }
 
+    /**
+     * Process login form submission.
+     *
+     * Validates that identifier and password are non-empty, then delegates
+     * credential checking to User::verify() which handles email/username lookup
+     * and bcrypt comparison. On success, regenerates the session ID and redirects
+     * to the originally intended URL (invite link) or the dashboard.
+     */
     public function login(array $params): void
     {
+        // Support both field names: new 'identifier' and legacy 'email'
         $identifier = trim($_POST['identifier'] ?? $_POST['email'] ?? '');
         $password   = $_POST['password'] ?? '';
 
@@ -30,7 +72,7 @@ class AuthController
 
         $user = User::verify($identifier, $password);
         if (!$user) {
-            // Check if banned specifically for a better error message
+            // Provide a specific message for banned accounts (better UX than generic error)
             $found = User::findByIdentifier($identifier);
             if ($found && (int)($found['is_banned'] ?? 0) === 1) {
                 Session::flash('error', Lang::t('auth.errors.account_banned'));
@@ -40,36 +82,54 @@ class AuthController
             redirect('/login');
         }
 
+        // Successful login: regenerate session ID (session fixation prevention)
         Session::login((int)$user['id']);
 
-        // Redirect to originally intended URL (e.g. invite link)
+        // Redirect to the page the user was trying to reach before being sent to login
+        // (typically a group invite link saved by requireAuth())
         $intended = Session::get('redirect_after_login');
         if ($intended) {
-            Session::set('redirect_after_login', null);
+            Session::set('redirect_after_login', null); // consume the saved URL
             redirect($intended);
         }
         redirect('/');
     }
 
+    // ── Registration ──────────────────────────────────────────────────────────
+
+    /**
+     * Display the registration form.
+     * Redirects already-authenticated users to the dashboard.
+     * Pre-fills the invite code field when a code is present in the URL.
+     */
     public function registerForm(array $params): void
     {
         if (Session::userId()) redirect('/');
 
-        if (!Setting::isRegistrationOpen() && !self::inviteRequired()) {
-            // Closed and no invite forced: this shouldn't happen, but guard anyway
-        }
-
         $setupToken   = self::getSetupToken();
+        // Pre-fill from ?invite= URL param, or fall back to the first-boot setup code
         $prefillToken = trim($_GET['invite'] ?? '') ?: ($setupToken ?? '');
+
         render('auth/register', [
             'pageTitle'        => Lang::t('auth.register_title'),
             'error'            => Session::flash('error'),
             'prefillToken'     => $prefillToken,
             'setupToken'       => $setupToken,
-            'registrationOpen' => Setting::isRegistrationOpen(),
+            'registrationOpen' => Setting::isRegistrationOpen(), // controls invite field visibility
         ]);
     }
 
+    /**
+     * Process registration form submission.
+     *
+     * Validation order:
+     *   1. Invite code (if required)
+     *   2. Email format and uniqueness
+     *   3. Username format and uniqueness
+     *   4. Password minimum length
+     *
+     * On success: account created, invite code consumed (if used), user logged in.
+     */
     public function register(array $params): void
     {
         $email    = trim($_POST['email'] ?? '');
@@ -77,6 +137,8 @@ class AuthController
         $username = trim($_POST['username'] ?? '');
         $token    = trim($_POST['invite_token'] ?? '');
 
+        // An invite is required when: registration is closed OR no users exist yet
+        // (the first user always needs the system setup code)
         $needsInvite = !Setting::isRegistrationOpen() || AppInvite::noUsersExist();
 
         if ($needsInvite) {
@@ -91,6 +153,7 @@ class AuthController
             }
         }
 
+        // Email validation
         if (!$email) {
             Session::flash('error', Lang::t('auth.errors.email_required'));
             redirect('/register');
@@ -99,6 +162,8 @@ class AuthController
             Session::flash('error', Lang::t('auth.errors.email_invalid'));
             redirect('/register');
         }
+
+        // Username validation: 3–30 chars, alphanumeric + . _ -
         if ($username === '') {
             Session::flash('error', Lang::t('auth.errors.username_required'));
             redirect('/register');
@@ -107,10 +172,14 @@ class AuthController
             Session::flash('error', Lang::t('auth.errors.username_invalid'));
             redirect('/register');
         }
+
+        // Password minimum length
         if (strlen($password) < 6) {
             Session::flash('error', Lang::t('auth.errors.password_short'));
             redirect('/register');
         }
+
+        // Uniqueness checks
         if (User::findByEmail($email)) {
             Session::flash('error', Lang::t('auth.errors.email_taken'));
             redirect('/register');
@@ -120,8 +189,10 @@ class AuthController
             redirect('/register');
         }
 
+        // Create the account; first user is auto-promoted to admin
         $userId = User::create($email, $password, $username);
 
+        // Consume the invite code (if one was used)
         if ($needsInvite && isset($invite)) {
             AppInvite::markUsed($token, $userId);
         }
@@ -130,12 +201,23 @@ class AuthController
         redirect('/');
     }
 
+    // ── Logout ────────────────────────────────────────────────────────────────
+
+    /**
+     * Destroy the current session and redirect to the login page.
+     */
     public function logout(array $params): void
     {
         Session::logout();
         redirect('/login');
     }
 
+    // ── Password change ───────────────────────────────────────────────────────
+
+    /**
+     * Display the password-change form.
+     * Requires authentication (requireAuth() redirects to login if not logged in).
+     */
     public function passwordForm(array $params): void
     {
         $userId = requireAuth();
@@ -146,6 +228,14 @@ class AuthController
         ]);
     }
 
+    /**
+     * Process the password-change form.
+     *
+     * Verifies the current password before allowing the change to prevent
+     * unauthorized password resets via unattended sessions.
+     * Validates that the new password meets the minimum length and that the
+     * confirmation matches.
+     */
     public function changePassword(array $params): void
     {
         $userId  = requireAuth();
@@ -153,21 +243,25 @@ class AuthController
         $new     = $_POST['new_password'] ?? '';
         $confirm = $_POST['confirm_password'] ?? '';
 
-        $user = User::findById($userId);
-        // Re-read full row for password_hash
+        // Fetch the current hash directly (findById doesn't include password_hash)
         $db   = Database::getInstance();
         $stmt = $db->prepare('SELECT password_hash FROM users WHERE id = ? LIMIT 1');
         $stmt->execute([$userId]);
         $hash = $stmt->fetchColumn();
 
+        // Current password must be correct
         if (!password_verify($current, $hash)) {
             Session::flash('error', Lang::t('profile.errors.current_wrong'));
             redirect('/profile/password');
         }
+
+        // New password must meet minimum length
         if (strlen($new) < 6) {
             Session::flash('error', Lang::t('auth.errors.password_short'));
             redirect('/profile/password');
         }
+
+        // Confirmation must match
         if ($new !== $confirm) {
             Session::flash('error', Lang::t('profile.errors.passwords_mismatch'));
             redirect('/profile/password');
@@ -178,8 +272,16 @@ class AuthController
         redirect('/profile/password');
     }
 
+    // ── Private helpers ───────────────────────────────────────────────────────
+
     /**
-     * Return the system-generated invite token if no users exist yet, else null.
+     * Return the system-generated setup invite token if no users exist yet.
+     *
+     * Used to surface the first-boot code directly on the login/register pages
+     * so the operator doesn't have to check the Docker logs.
+     * Returns null once at least one user has been created.
+     *
+     * @return string|null  Token string, or null.
      */
     private static function getSetupToken(): ?string
     {
@@ -195,10 +297,5 @@ class AuthController
             error_log('[Letsgo setup] getSetupToken failed: ' . $e->getMessage());
             return null;
         }
-    }
-
-    private static function inviteRequired(): bool
-    {
-        return !Setting::isRegistrationOpen();
     }
 }

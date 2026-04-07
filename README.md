@@ -2,161 +2,146 @@
 
 > **What should the next group activity be?**
 
-Letsgo is a simple, invite-only web application for friend groups. Collect programme ideas, give detailed feedback, and collaboratively decide what to do next.
+Letsgo is a web application for friend groups, teams, and communities to collect programme ideas, rate them as a group, and collaboratively decide what to do next.
 
-**Primary development happens on GitLab. The GitHub repository is a mirror only.**
-
----
-
-## Features (MVP)
-
-- Session-based user registration and login
-- Create groups and manage members
-- Invite new members via time-limited links (24 h)
-- Create programme ideas with rich optional fields (location, date, deadlines, cost, notes)
-- Three-scale feedback system (interest / current mood / willingness), 1–10 per scale
-- Programme status management (Idea → Discussing → Final / Cancelled)
-- Upcoming deadlines highlighted on the dashboard
-- All UI text served from a JSON language file (currently: Hungarian)
+**Version:** 1.0.0 · **Primary repo:** GitLab · **GitHub:** read-only mirror
 
 ---
 
-## Tech stack
+## Features
 
-| Layer      | Technology                  |
-|------------|-----------------------------|
-| Backend    | PHP 8.2 (plain, no framework) |
-| Database   | MySQL 8.0                   |
-| Frontend   | HTML5 + CSS3 + minimal JS   |
-| Auth       | PHP sessions (`$_SESSION`)  |
-| Container  | Docker + Docker Compose     |
+- **Accounts** — invite-code-gated or open registration; login by email or username
+- **Groups** — create groups, invite members via 24-hour links, manage membership
+- **Programme ideas** — propose events with title, description, location, date, deadlines, cost, notes
+- **Flexible dates** — each date field accepts either a date picker or free text ("next weekend", "TBD")
+- **Three-scale feedback** — rate each idea on Interest / Mood / Willingness (1–10); group averages shown as progress bars
+- **Status lifecycle** — Idea → Discussing → Final / Cancelled (creator-managed)
+- **Upcoming deadlines** — dashboard widget for events with deadlines in the next 7 days
+- **Admin panel** — user management (ban/unban/delete), registration toggle, group-creation toggle, invite code management
+- **Password change** — logged-in users can update their password
+- **Invite link persistence** — unauthenticated users who follow a group invite link are redirected back after login
+- **Dark/light theme** — toggle with `localStorage` persistence
+- **Hungarian UI** — all strings in `lang/hu.json`; easily translatable
 
 ---
 
-## Project structure
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | PHP 8.2 (no framework) |
+| Database | MySQL 8.x |
+| Frontend | HTML5 + CSS3 + vanilla JS |
+| Auth | PHP sessions |
+| Container | Docker + Docker Compose |
+
+---
+
+## Quick Start
+
+```bash
+# Clone
+git clone <repo-url> letsgo && cd letsgo
+
+# Configure (adjust DB passwords at minimum)
+cp .env.example .env
+
+# Start
+docker compose up -d
+
+# Open
+open http://localhost:8080
+```
+
+On first start the **setup invite code** appears on the login page — use it to create the first admin account.
+
+To stop:
+```bash
+docker compose down          # keep data
+docker compose down -v       # also delete DB volume
+```
+
+---
+
+## Upgrading an Existing Database
+
+```bash
+docker exec -i letsgo_db mysql -u root -p<password> < docker/mysql/upgrade.sql
+```
+
+The script is idempotent (safe to run multiple times).
+
+---
+
+## Project Structure
 
 ```
 letsgo/
 ├── docker/
-│   ├── php/
-│   │   └── Dockerfile          # PHP 8.2 Apache image
-│   └── mysql/
-│       └── init.sql            # Database schema
-├── lang/
-│   └── hu.json                 # All user-visible strings (Hungarian)
-├── public/                     # Apache document root
-│   ├── index.php               # Front controller
-│   ├── .htaccess               # mod_rewrite rules
-│   └── assets/
-│       ├── css/app.css
-│       └── js/app.js
+│   ├── mysql/
+│   │   ├── init.sql        # Schema (fresh install)
+│   │   └── upgrade.sql     # Migration (existing DB)
+│   └── php/Dockerfile      # PHP 8.2 + Apache
+├── docs/                   # Full documentation (wiki-ready)
+├── lang/hu.json            # All UI strings (Hungarian)
+├── public/                 # Apache document root
+│   ├── index.php           # Front controller
+│   ├── .htaccess           # mod_rewrite rules
+│   └── assets/css & js
 ├── src/
-│   ├── bootstrap.php           # Class loader + helper functions
-│   ├── Core/
-│   │   ├── Database.php        # PDO singleton
-│   │   ├── Lang.php            # JSON translation loader
-│   │   ├── Router.php          # Front-controller router
-│   │   └── Session.php         # Session + flash messages
-│   ├── Controllers/
-│   │   ├── AuthController.php
-│   │   ├── DashboardController.php
-│   │   ├── EventController.php
-│   │   ├── GroupController.php
-│   │   └── InviteController.php
-│   ├── Models/
-│   │   ├── User.php
-│   │   ├── Group.php
-│   │   ├── Invite.php
-│   │   ├── Event.php
-│   │   └── Response.php
-│   └── Views/
-│       ├── layout/
-│       │   ├── header.php
-│       │   └── footer.php
-│       ├── auth/
-│       ├── dashboard/
-│       ├── event/
-│       ├── group/
-│       ├── invite/
-│       └── errors/
-├── docker-compose.yml
-└── README.md
+│   ├── bootstrap.php       # Loader + global helpers
+│   ├── Core/               # Database, Session, Lang, Router
+│   ├── Models/             # User, Group, Invite, AppInvite, Event, Response, Setting
+│   ├── Controllers/        # Auth, Admin, Dashboard, Group, Event, Invite
+│   └── Views/              # PHP templates (layout + per-feature)
+├── storage/                # Writable at runtime (setup log)
+├── CHANGELOG.md
+├── VERSION
+└── docker-compose.yml
 ```
 
 ---
 
-## Getting started
+## Documentation
 
-### Requirements
+Full documentation lives in the [`docs/`](docs/) directory:
 
-- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
-
-### Run
-
-```bash
-docker compose up --build
-```
-
-The application is available at **http://localhost:8080**.
-
-On first start MySQL runs `docker/mysql/init.sql` automatically and creates the schema.
-
-### Stop
-
-```bash
-docker compose down
-```
-
-To also delete the database volume:
-
-```bash
-docker compose down -v
-```
-
----
-
-## Architecture notes
-
-### Routing
-
-All HTTP requests hit `public/index.php` (the front controller) via an Apache `mod_rewrite` rule. The `Router` class matches request method + URI against registered patterns and dispatches to the appropriate `Controller@method`. Named URL segments (`/groups/{id}`) are extracted as parameters.
-
-### Language / i18n
-
-All user-visible strings are stored in `lang/hu.json`. The `Lang::t('dot.notation.key')` helper performs a lookup at runtime. To add a new language, copy `hu.json`, translate the values, and change the file loaded in `src/bootstrap.php`.
-
-### Data access
-
-Each model is a static class that receives a PDO instance from the `Database` singleton. All queries use prepared statements with bound parameters.
-
-### Permissions summary
-
-| Action                    | Who can do it              |
-|---------------------------|----------------------------|
-| Create a group            | Any logged-in user         |
-| Delete a group            | Group admin (owner) only   |
-| Generate an invite link   | Group admin (owner) only   |
-| Join via invite           | Any logged-in user         |
-| Create a programme idea   | Any group member           |
-| Change programme status   | Creator of the idea only   |
-| Submit / update feedback  | Any group member           |
+| Doc | Contents |
+|---|---|
+| [Installation](docs/installation.md) | Docker setup, env vars, production checklist |
+| [Architecture](docs/architecture.md) | Stack, request lifecycle, security model |
+| [Database](docs/database.md) | Schema reference, ERD, migrations |
+| [Routes](docs/routes.md) | All endpoints and access levels |
+| [Features](docs/features.md) | Detailed feature descriptions |
+| [Admin Guide](docs/admin-guide.md) | Admin panel walkthrough |
 
 ---
 
 ## Localisation
 
-To create a new locale:
+1. Copy `lang/hu.json` → `lang/en.json` (or any locale)
+2. Translate the values (keys must stay identical)
+3. Change `Lang::load(ROOT . '/lang/hu.json')` in `src/bootstrap.php` to the new file
 
-1. Copy `lang/hu.json` to e.g. `lang/en.json`
-2. Translate all values (keys must remain identical)
-3. In `src/bootstrap.php`, change `Lang::load(ROOT . '/lang/hu.json')` to point to the new file
+---
 
-No code changes beyond the loader call are needed.
+## Permissions Summary
+
+| Action | Who |
+|---|---|
+| Create a group | Any user (unless admin-restricted) |
+| Delete a group | Group owner |
+| Generate invite link | Group owner |
+| Join a group | Any authenticated user with a valid token |
+| Create a programme idea | Any group member |
+| Change status / delete idea | Creator only |
+| Submit / update feedback | Any group member |
+| Admin panel | Admin accounts only |
+| Ban / delete users | Admin only |
 
 ---
 
 ## Development
 
-The primary repository is on **GitLab**. GitHub is a read-only mirror.
-
-All feature work happens on the `development` branch. Commits are made when the code reaches a defined milestone (MVP feature complete).
+Primary repository is on **GitLab**; GitHub is a read-only mirror.
+Feature work happens on the `development` branch.
