@@ -20,6 +20,13 @@ class Mailer
         ]));
     }
 
+    public static function sendPasswordReset(array $user, string $token): void
+    {
+        $resetUrl = appBaseUrl() . '/reset-password?token=' . urlencode($token);
+        self::send($user['email'], Lang::t('email.password_reset_subject'),
+            self::renderEmail('password_reset', ['user' => $user, 'resetUrl' => $resetUrl]));
+    }
+
     public static function sendPasswordChanged(array $user): void
     {
         self::send($user['email'], Lang::t('email.password_changed_subject'),

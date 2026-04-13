@@ -47,6 +47,7 @@ require_once ROOT . '/src/Models/User.php';
 require_once ROOT . '/src/Models/Group.php';
 require_once ROOT . '/src/Models/Invite.php';
 require_once ROOT . '/src/Models/Event.php';
+require_once ROOT . '/src/Models/PasswordReset.php';
 require_once ROOT . '/src/Models/EventTimeSlot.php';
 require_once ROOT . '/src/Models/Response.php';
 

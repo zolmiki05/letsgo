@@ -16,6 +16,10 @@ $router->post('/register', 'AuthController@register');
 $router->post('/logout',          'AuthController@logout');
 $router->get('/profile/password',  'AuthController@passwordForm');
 $router->post('/profile/password', 'AuthController@changePassword');
+$router->get('/forgot-password',   'AuthController@forgotForm');
+$router->post('/forgot-password',  'AuthController@forgot');
+$router->get('/reset-password',    'AuthController@resetForm');
+$router->post('/reset-password',   'AuthController@reset');
 
 // --- Dashboard ---
 $router->get('/', 'DashboardController@index');

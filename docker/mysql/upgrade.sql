@@ -62,6 +62,17 @@ SET @sql = IF(@exists = 0,
   'SELECT "events.deadline_decision_text already exists"');
 PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
 
+-- ── password_resets table ────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS password_resets (
+    id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT UNSIGNED NOT NULL,
+    token      VARCHAR(64)  NOT NULL UNIQUE,
+    expires_at DATETIME     NOT NULL,
+    created_at DATETIME     NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ── event_time_slots table ───────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS event_time_slots (

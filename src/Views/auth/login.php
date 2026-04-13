@@ -35,6 +35,8 @@
 
         <p class="auth-switch">
             <a href="/register"><?= e(Lang::t('auth.login_link')) ?></a>
+            &nbsp;·&nbsp;
+            <a href="/forgot-password"><?= e(Lang::t('auth.forgot_link')) ?></a>
         </p>
     </div>
 </div>
