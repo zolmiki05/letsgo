@@ -184,9 +184,15 @@ class Mailer
             }
             return $r;
         };
-        $w    = fn(string $c) => fwrite($conn, $c . "\r\n");
+        $w = function (string $c) use ($conn): void {
+            $result = @fwrite($conn, $c . "\r\n");
+            if ($result === false) {
+                throw new RuntimeException("SMTP write failed (EPIPE) while sending: " . strtok($c, ' '));
+            }
+        };
         $code = fn(string $r): int => (int)substr($r, 0, 3);
-        $ehlo = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        // Strip port from HTTP_HOST (e.g. "localhost:8080" → "localhost")
+        $ehlo = strtok($_SERVER['HTTP_HOST'] ?? 'localhost', ':');
 
         $read();
         $w("EHLO {$ehlo}"); $read();
