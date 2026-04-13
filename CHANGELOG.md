@@ -5,6 +5,40 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.0.3] – 2026-04-07
+
+### Added
+- **Group rename** — the group owner can rename the group from an inline form in the sidebar (`POST /groups/{id}/rename`).
+
+### Fixed
+- **Event card creator alignment** — "Hozzáadta" is now a `flex-basis: 100%` span inside the meta flex container, guaranteeing identical left alignment with the date/location row above it.
+- **Success flash messages** — group page now displays the actual flash message text instead of a hardcoded invite string, so rename and invite confirmations both show correctly.
+
+---
+
+## [1.0.2] – 2026-04-07
+
+### Added
+- **SVG favicon** (`/assets/favicon.svg`) — blue rounded-square with a white right-pointing arrow; linked via `<link rel="icon">` in the layout header.
+
+### Fixed
+- **Event card creator alignment** — "Hozzáadta" row now uses `display: flex; align-items: center` matching the meta row, so the left edge lines up correctly with the title and date fields.
+
+---
+
+## [1.0.1] – 2026-04-07
+
+### Added
+- **Creator attribution on event cards** — each programme idea card in the group view now shows who added it (username if set, otherwise email).
+- **Event editing** — the event creator can edit all fields of a programme idea (title, description, location, date, deadlines, cost, notes) via a new `/events/{id}/edit` page.
+  - The edit form pre-fills all current values, including the correct date/text mode for each date field.
+  - Access is restricted to the creator; other members receive a flash error and are redirected.
+
+### Changed
+- `Event::forGroup()` now also returns `creator_username` alongside the existing `creator_email`.
+
+---
+
 ## [1.0.0] – 2026-04-07
 
 ### Added

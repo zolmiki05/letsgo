@@ -10,7 +10,12 @@
 <div class="card" style="margin-bottom: 1rem;">
     <h2 class="card-title"><?= e(Lang::t('admin.generate_title')) ?></h2>
     <p class="text-muted" style="margin-bottom: 1rem;"><?= e(Lang::t('admin.generate_desc')) ?></p>
-    <form method="POST" action="/admin/invites/generate">
+    <form method="POST" action="/admin/invites/generate" class="form-stack">
+        <div class="field">
+            <label for="invite_email"><?= e(Lang::t('email.send_invite_to')) ?></label>
+            <input type="email" id="invite_email" name="invite_email"
+                   placeholder="pl. valaki@email.hu" maxlength="255">
+        </div>
         <button type="submit" class="btn btn-primary"><?= e(Lang::t('admin.generate_button')) ?></button>
     </form>
 </div>

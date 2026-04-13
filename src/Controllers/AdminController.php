@@ -80,7 +80,14 @@ class AdminController
     public function generateInvite(array $params): void
     {
         $userId = requireAdmin();
-        AppInvite::create($userId);
+        $token  = AppInvite::create($userId);
+
+        // Optionally email the code to a specified address
+        $emailTo = trim($_POST['invite_email'] ?? '');
+        if ($emailTo && filter_var($emailTo, FILTER_VALIDATE_EMAIL)) {
+            Mailer::sendInvite($emailTo, $token);
+        }
+
         Session::flash('success', Lang::t('admin.invite_generated'));
         redirect('/admin/invites');
     }

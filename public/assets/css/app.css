@@ -708,7 +708,8 @@ h1, h2, h3, h4 {
   padding-left: .75rem;
 }
 .event-title   { font-weight: 600; color: var(--text); font-size: .9375rem; flex: 1; letter-spacing: -.01em; }
-.event-card-meta { font-size: .8125rem; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: .3rem; padding-left: .75rem; }
+.event-card-meta    { font-size: .8125rem; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: .3rem; padding-left: .75rem; }
+.event-card-creator { font-size: .75rem; color: var(--text-muted); flex-basis: 100%; margin-top: .1rem; }
 
 /* ── Member list ────────────────────────────────────────────── */
 .member-list { display: flex; flex-direction: column; gap: .625rem; }
@@ -723,6 +724,24 @@ h1, h2, h3, h4 {
 }
 .member-item:last-child { border-bottom: none; }
 .member-email { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; font-weight: 500; }
+
+/* ── Rename form ────────────────────────────────────────────── */
+.rename-row   { display: flex; gap: .5rem; }
+.rename-input {
+  flex: 1;
+  min-width: 0;
+  padding: .35rem .75rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .875rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.rename-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
 
 /* ── Invite box ─────────────────────────────────────────────── */
 .invite-box { display: flex; gap: .5rem; margin-bottom: .5rem; }
@@ -1051,3 +1070,21 @@ h1, h2, h3, h4 {
 
 /* ── Nav username ───────────────────────────────────────────── */
 .nav-username { font-weight: 600; }
+
+/* ── Time slot rows ─────────────────────────────────────────── */
+.slot-row {
+  display: flex; align-items: center; gap: .5rem;
+  flex-wrap: wrap;
+  padding: .5rem .6rem;
+  background: var(--surface-alt, var(--bg-card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: .4rem;
+}
+.slot-row input[type=date],
+.slot-row input[type=text] { flex: 1; min-width: 0; }
+.slot-row .date-mode-toggle { flex: 0 0 auto; margin-bottom: 0; }
+.slot-remove-btn { flex: 0 0 auto; color: var(--danger, #e55); }
+.slot-add-btn { margin-top: .25rem; }
+.slot-list { margin: 0; padding-left: 1.1rem; }
+.slot-list li { margin-bottom: .15rem; }

@@ -12,7 +12,7 @@
 <div class="alert alert-error"><?= e($error) ?></div>
 <?php endif; ?>
 <?php if ($success): ?>
-<div class="alert alert-success"><?= e(Lang::t('group.invite_title')) ?> — <?= e(Lang::t('group.invite_active')) ?></div>
+<div class="alert alert-success"><?= e($success) ?></div>
 <?php endif; ?>
 
 <div class="group-layout">
@@ -48,6 +48,7 @@
                     <?php if ($ev['location']): ?>
                     <span>· <?= e($ev['location']) ?></span>
                     <?php endif; ?>
+                    <span class="event-card-creator"><?= e(Lang::t('event.added_by')) ?>: <?= e($ev['creator_username'] ?? $ev['creator_email']) ?></span>
                 </div>
             </a>
             <?php endforeach; ?>
@@ -74,6 +75,20 @@
         </div>
 
         <?php if ($isAdmin): ?>
+        <!-- Rename group -->
+        <div class="card">
+            <h3 class="card-title"><?= e(Lang::t('group.rename_title')) ?></h3>
+            <form method="POST" action="/groups/<?= (int)$group['id'] ?>/rename" class="rename-form">
+                <div class="rename-row">
+                    <input type="text" name="name" class="rename-input"
+                           value="<?= e($group['name']) ?>" maxlength="255" required>
+                    <button type="submit" class="btn btn-outline btn-sm">
+                        <?= e(Lang::t('group.rename_button')) ?>
+                    </button>
+                </div>
+            </form>
+        </div>
+
         <!-- Invite link -->
         <div class="card">
             <h3 class="card-title"><?= e(Lang::t('group.invite_title')) ?></h3>

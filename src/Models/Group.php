@@ -93,6 +93,19 @@ class Group
     }
 
     /**
+     * Rename a group.
+     *
+     * @param int    $id    Group ID.
+     * @param string $name  New display name (max 255 chars).
+     */
+    public static function rename(int $id, string $name): void
+    {
+        $db   = Database::getInstance();
+        $stmt = $db->prepare('UPDATE `groups` SET name = ? WHERE id = ?');
+        $stmt->execute([$name, $id]);
+    }
+
+    /**
      * Delete a group and all cascade-related data.
      *
      * The following rows are removed automatically via FK ON DELETE CASCADE:

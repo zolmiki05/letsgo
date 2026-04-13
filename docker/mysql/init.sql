@@ -96,6 +96,16 @@ INSERT INTO settings (`key`, value) VALUES
     ('registration_open',      '0'),
     ('users_can_create_groups','1');
 
+-- Event time slots (multiple proposed dates per event) ----------------------
+CREATE TABLE event_time_slots (
+    id          INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
+    event_id    INT UNSIGNED  NOT NULL,
+    slot_date   DATE          NULL,
+    slot_text   VARCHAR(255)  NULL,
+    sort_order  TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Responses (per-user feedback on an event) --------------------------------
 CREATE TABLE responses (
     id                INT UNSIGNED   AUTO_INCREMENT PRIMARY KEY,

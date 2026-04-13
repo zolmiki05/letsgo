@@ -6,6 +6,7 @@
  *   GET  /groups/create           → createForm()      Show the create-group form
  *   POST /groups/create           → create()          Process group creation
  *   GET  /groups/{id}             → show()            Group detail page
+ *   POST /groups/{id}/rename      → rename()          Rename group (owner only)
  *   POST /groups/{id}/delete      → delete()          Delete group (owner only)
  *   POST /groups/{id}/invite      → generateInvite()  Generate a 24h join link (owner only)
  *
@@ -13,7 +14,7 @@
  *   - Any logged-in user can create groups, unless the admin has disabled
  *     group creation for non-admins (Setting 'users_can_create_groups').
  *   - The group detail page is accessible only to members.
- *   - Delete and invite-generation are restricted to the group owner (owner_id).
+ *   - Rename, delete and invite-generation are restricted to the group owner (owner_id).
  */
 class GroupController
 {
@@ -106,6 +107,36 @@ class GroupController
         redirect('/groups/' . $groupId);
     }
 
+    // ── Group rename ─────────────────────────────────────────────────────────
+
+    /**
+     * Rename a group (owner only).
+     * Validates the new name is non-empty, then updates and redirects back.
+     */
+    public function rename(array $params): void
+    {
+        $userId  = requireAuth();
+        $groupId = (int)$params['id'];
+        $group   = Group::findById($groupId);
+
+        if (!$group) redirect('/');
+
+        if ((int)$group['owner_id'] !== $userId) {
+            Session::flash('error', Lang::t('group.errors.not_admin'));
+            redirect('/groups/' . $groupId);
+        }
+
+        $name = trim($_POST['name'] ?? '');
+        if (!$name) {
+            Session::flash('error', Lang::t('group.errors.name_required'));
+            redirect('/groups/' . $groupId);
+        }
+
+        Group::rename($groupId, $name);
+        Session::flash('success', Lang::t('group.renamed'));
+        redirect('/groups/' . $groupId);
+    }
+
     // ── Group deletion ────────────────────────────────────────────────────────
 
     /**
@@ -152,7 +183,7 @@ class GroupController
         }
 
         Invite::create($groupId, $userId);
-        Session::flash('success', 'invite_generated');
+        Session::flash('success', Lang::t('group.invite_title') . ' — ' . Lang::t('group.invite_active'));
         redirect('/groups/' . $groupId);
     }
 }

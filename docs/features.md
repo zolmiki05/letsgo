@@ -1,6 +1,6 @@
 # Features
 
-Complete feature reference for Letsgo v1.0.0.
+Complete feature reference for Letsgo v1.0.3.
 
 ---
 
@@ -39,8 +39,13 @@ Complete feature reference for Letsgo v1.0.0.
 
 ### Group Detail Page
 - Lists all **programme ideas** (events) in the group with status badges.
+- Each event card shows **who added it** (username, or email if the user has no username).
 - Shows the **member list** with the owner highlighted.
 - Owner-only section: **invite link management** and **delete group**.
+
+### Renaming a Group
+- Only the group owner can rename a group.
+- An inline form in the owner sidebar pre-fills the current name; submitting updates it immediately.
 
 ### Deleting a Group
 - Only the group owner can delete a group.
@@ -93,6 +98,12 @@ IDEA → DISCUSSING → FINAL
 | `DISCUSSING` | Being actively discussed |
 | `FINAL` | Confirmed — it's happening |
 | `CANCELLED` | Called off |
+
+### Editing an Event
+- Only the event creator can edit an event (`/events/{id}/edit`).
+- All fields are editable: title, description, location, date, signup deadline, decision deadline, cost, notes.
+- The edit form pre-fills all current values; the date/text mode is restored to whichever column is set.
+- Status is not changed by editing — use the status control on the event detail page.
 
 ### Deleting an Event
 - Only the event creator can delete an event.
@@ -157,6 +168,7 @@ The three scales are intentionally separate to help groups distinguish between
 
 ## UI / UX
 
+- **SVG favicon** — blue rounded-square icon with a right-pointing arrow, served from `/assets/favicon.svg`.
 - **Dark/light theme toggle** — preference saved to `localStorage`.
 - **Invite link copy button** — uses Clipboard API with a "Copied!" confirmation.
 - **Feedback sliders** — range inputs with live value display.
