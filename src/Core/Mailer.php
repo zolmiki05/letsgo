@@ -131,11 +131,16 @@ class Mailer
 
     public static function send(string $to, string $subject, string $html): bool
     {
-        if (!(getenv('MAIL_HOST') ?: '')) return false;
+        if (!(getenv('MAIL_HOST') ?: '')) {
+            error_log('[Mailer] Skipped (MAIL_HOST not set): ' . $to . ' – ' . $subject);
+            return false;
+        }
         try {
-            return self::smtp($to, $subject, $html);
+            $result = self::smtp($to, $subject, $html);
+            error_log('[Mailer] ' . ($result ? 'OK' : 'FAILED') . ': to=' . $to . ' subject=' . $subject);
+            return $result;
         } catch (Throwable $e) {
-            error_log('[Mailer] ' . $to . ': ' . $e->getMessage());
+            error_log('[Mailer] ERROR: to=' . $to . ' subject=' . $subject . ' – ' . $e->getMessage());
             return false;
         }
     }
@@ -176,12 +181,14 @@ class Mailer
         if (!$conn) throw new RuntimeException("Connect failed: {$errstr} ({$errno})");
         stream_set_timeout($conn, 15);
 
-        $read = function () use ($conn): string {
+        $debug = (bool)(getenv('MAIL_DEBUG') ?: false);
+        $read  = function () use ($conn, $debug): string {
             $r = '';
             while ($l = fgets($conn, 512)) {
                 $r .= $l;
                 if (isset($l[3]) && $l[3] === ' ') break;
             }
+            if ($debug) error_log('[SMTP] << ' . trim($r));
             return $r;
         };
         $w = function (string $c) use ($conn): void {
