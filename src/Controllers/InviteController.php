@@ -91,8 +91,16 @@ class InviteController
 
         // ── POST: execute the join ────────────────────────────────────────────
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // INSERT IGNORE makes this idempotent if the user is already a member
-            Group::addMember($groupId, $userId);
+            $alreadyMember = Group::isMember($groupId, $userId);
+            Group::addMember($groupId, $userId); // INSERT IGNORE – idempotent
+
+            // Notify existing members only if this is a genuine new join
+            if (!$alreadyMember) {
+                $newMember = User::findById($userId);
+                $members   = Group::members($groupId);
+                if ($newMember) Mailer::sendMemberJoined($group, $members, $newMember);
+            }
+
             redirect('/groups/' . $groupId);
         }
 

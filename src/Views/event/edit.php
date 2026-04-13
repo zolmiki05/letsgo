@@ -8,8 +8,6 @@
 <?php endif; ?>
 
 <?php
-// Determine current date modes based on which column has a value
-$dateMode    = $event['event_date']        ? 'date' : 'text';
 $dlSignMode  = $event['deadline_signup']   ? 'date' : 'text';
 $dlDecMode   = $event['deadline_decision'] ? 'date' : 'text';
 ?>
@@ -31,45 +29,57 @@ $dlDecMode   = $event['deadline_decision'] ? 'date' : 'text';
             <textarea id="description" name="description" rows="3"><?= e($event['description'] ?? '') ?></textarea>
         </div>
 
-        <div class="field-row">
-            <div class="field">
-                <label for="location">
-                    <?= e(Lang::t('event.field_location')) ?>
-                    <span class="field-optional"><?= e(Lang::t('event.optional')) ?></span>
-                </label>
-                <input type="text" id="location" name="location" maxlength="255"
-                       value="<?= e($event['location'] ?? '') ?>">
-            </div>
+        <div class="field">
+            <label for="location">
+                <?= e(Lang::t('event.field_location')) ?>
+                <span class="field-optional"><?= e(Lang::t('event.optional')) ?></span>
+            </label>
+            <input type="text" id="location" name="location" maxlength="255"
+                   value="<?= e($event['location'] ?? '') ?>">
+        </div>
 
-            <!-- Event date -->
-            <div class="field">
-                <label>
-                    <?= e(Lang::t('event.field_date')) ?>
-                    <span class="field-optional"><?= e(Lang::t('event.optional')) ?></span>
-                </label>
-                <div class="date-mode-toggle">
-                    <label class="date-mode-label">
-                        <input type="radio" name="date_mode" value="date"
-                               onchange="toggleDateMode('date_field')"
-                               <?= $dateMode === 'date' ? 'checked' : '' ?>>
-                        <?= e(Lang::t('event.date_mode_picker')) ?>
-                    </label>
-                    <label class="date-mode-label">
-                        <input type="radio" name="date_mode" value="text"
-                               onchange="toggleDateMode('date_field')"
-                               <?= $dateMode === 'text' ? 'checked' : '' ?>>
-                        <?= e(Lang::t('event.date_mode_text')) ?>
-                    </label>
+        <!-- Proposed time slots -->
+        <div class="field">
+            <label>
+                <?= e(Lang::t('event.field_time_slots')) ?>
+                <span class="field-optional"><?= e(Lang::t('event.optional')) ?></span>
+            </label>
+            <div id="slots-container">
+                <?php foreach ($slots as $i => $slot):
+                    $mode = $slot['slot_date'] ? 'date' : 'text';
+                ?>
+                <div class="slot-row" data-slot-index="<?= $i ?>">
+                    <div class="date-mode-toggle">
+                        <label class="date-mode-label">
+                            <input type="radio" name="slot_mode[<?= $i ?>]" value="date"
+                                   onchange="toggleSlotMode(<?= $i ?>)"
+                                   <?= $mode === 'date' ? 'checked' : '' ?>>
+                            <?= e(Lang::t('event.date_mode_picker')) ?>
+                        </label>
+                        <label class="date-mode-label">
+                            <input type="radio" name="slot_mode[<?= $i ?>]" value="text"
+                                   onchange="toggleSlotMode(<?= $i ?>)"
+                                   <?= $mode === 'text' ? 'checked' : '' ?>>
+                            <?= e(Lang::t('event.date_mode_text')) ?>
+                        </label>
+                    </div>
+                    <input type="date" name="slot_date[<?= $i ?>]"
+                           value="<?= e($slot['slot_date'] ?? '') ?>"
+                           <?= $mode === 'text' ? 'style="display:none"' : '' ?>>
+                    <input type="text" name="slot_text[<?= $i ?>]"
+                           value="<?= e($slot['slot_text'] ?? '') ?>"
+                           maxlength="255" placeholder="pl. jövő hétvégén, TBD"
+                           <?= $mode === 'date' ? 'style="display:none"' : '' ?>>
+                    <button type="button" class="btn btn-ghost btn-sm slot-remove-btn"
+                            onclick="removeSlot(this)">
+                        <?= e(Lang::t('event.remove_time_slot')) ?>
+                    </button>
                 </div>
-                <input type="date" id="event_date" name="event_date" class="date-input-picker"
-                       value="<?= e($event['event_date'] ?? '') ?>"
-                       <?= $dateMode === 'text' ? 'style="display:none"' : '' ?>>
-                <input type="text" id="date_text" name="date_text" maxlength="255"
-                       placeholder="pl. jövő hétvégén, TBD"
-                       class="date-input-text"
-                       value="<?= e($event['date_text'] ?? '') ?>"
-                       <?= $dateMode === 'date' ? 'style="display:none"' : '' ?>>
+                <?php endforeach; ?>
             </div>
+            <button type="button" class="btn btn-ghost btn-sm slot-add-btn" onclick="addSlot()">
+                <?= e(Lang::t('event.add_time_slot')) ?>
+            </button>
         </div>
 
         <!-- Deadline signup -->
@@ -159,11 +169,11 @@ $dlDecMode   = $event['deadline_decision'] ? 'date' : 'text';
 </div>
 
 <script>
+// ── Deadline date-mode toggle (unchanged) ─────────────────────────────────
 function toggleDateMode(group) {
     const modes = {
-        date_field: { picker: '.date-input-picker',   text: '.date-input-text',   radio: 'date_mode' },
-        dl_signup:  { picker: '.dl-signup-picker',    text: '.dl-signup-text',    radio: 'deadline_signup_mode' },
-        dl_decision:{ picker: '.dl-decision-picker',  text: '.dl-decision-text',  radio: 'deadline_decision_mode' },
+        dl_signup:  { picker: '.dl-signup-picker', text: '.dl-signup-text', radio: 'deadline_signup_mode' },
+        dl_decision:{ picker: '.dl-decision-picker', text: '.dl-decision-text', radio: 'deadline_decision_mode' },
     };
     const cfg    = modes[group];
     const picker = document.querySelector(cfg.picker);
@@ -173,5 +183,66 @@ function toggleDateMode(group) {
     text.style.display   = val === 'text' ? '' : 'none';
     if (val === 'date') { text.value   = ''; }
     else                { picker.value = ''; }
+}
+
+// ── Proposed time slots ───────────────────────────────────────────────────
+// Start counter after last server-rendered slot index
+let slotCounter = <?= max(-1, count($slots) - 1) ?>;
+
+function createSlotRow(idx, mode, dateVal, textVal) {
+    const row = document.createElement('div');
+    row.className = 'slot-row';
+    row.dataset.slotIndex = idx;
+
+    const modeDate = (mode === 'date');
+    row.innerHTML =
+        '<div class="date-mode-toggle">' +
+            '<label class="date-mode-label">' +
+                '<input type="radio" name="slot_mode[' + idx + ']" value="date"' + (modeDate ? ' checked' : '') +
+                ' onchange="toggleSlotMode(' + idx + ')">' +
+                <?= json_encode(Lang::t('event.date_mode_picker')) ?> +
+            '</label>' +
+            '<label class="date-mode-label">' +
+                '<input type="radio" name="slot_mode[' + idx + ']" value="text"' + (!modeDate ? ' checked' : '') +
+                ' onchange="toggleSlotMode(' + idx + ')">' +
+                <?= json_encode(Lang::t('event.date_mode_text')) ?> +
+            '</label>' +
+        '</div>' +
+        '<input type="date" name="slot_date[' + idx + ']" value="' + escAttr(dateVal) + '"' +
+               (!modeDate ? ' style="display:none"' : '') + '>' +
+        '<input type="text" name="slot_text[' + idx + ']" value="' + escAttr(textVal) + '"' +
+               ' maxlength="255" placeholder="pl. jövő hétvégén, TBD"' +
+               (modeDate ? ' style="display:none"' : '') + '>' +
+        '<button type="button" class="btn btn-ghost btn-sm slot-remove-btn" onclick="removeSlot(this)">' +
+            <?= json_encode(Lang::t('event.remove_time_slot')) ?> +
+        '</button>';
+
+    return row;
+}
+
+function addSlot() {
+    slotCounter++;
+    const row = createSlotRow(slotCounter, 'date', '', '');
+    document.getElementById('slots-container').appendChild(row);
+}
+
+function removeSlot(btn) {
+    btn.closest('.slot-row').remove();
+}
+
+function toggleSlotMode(idx) {
+    const checked = document.querySelector('input[name="slot_mode[' + idx + ']"]:checked');
+    if (!checked) return;
+    const mode   = checked.value;
+    const picker = document.querySelector('input[name="slot_date[' + idx + ']"]');
+    const text   = document.querySelector('input[name="slot_text[' + idx + ']"]');
+    picker.style.display = mode === 'date' ? '' : 'none';
+    text.style.display   = mode === 'text' ? '' : 'none';
+    if (mode === 'date') { text.value   = ''; }
+    else                 { picker.value = ''; }
+}
+
+function escAttr(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 }
 </script>

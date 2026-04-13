@@ -111,6 +111,17 @@ class EventController
             'notes'                   => trim($_POST['notes'] ?? ''),
         ]);
 
+        // Save proposed time slots
+        $slots = self::parseSlotsFromPost();
+        EventTimeSlot::replaceForEvent($eventId, $slots);
+
+        // Notify group members about the new event
+        $event   = Event::findById($eventId);
+        $creator = User::findById($userId);
+        $members = Group::members($groupId);
+        $savedSlots = EventTimeSlot::forEvent($eventId);
+        Mailer::sendEventCreated($event, Group::findById($groupId), $members, $creator, $savedSlots, $userId);
+
         redirect('/events/' . $eventId);
     }
 
@@ -147,6 +158,7 @@ class EventController
             'event'     => $event,
             'group'     => Group::findById((int)$event['group_id']),
             'creator'   => $creator,
+            'slots'     => EventTimeSlot::forEvent($eventId),
             'responses' => Response::forEvent($eventId),
             'averages'  => Response::averages($eventId), // null if no responses yet
             'myResp'    => Response::findByEventAndUser($eventId, $userId),
@@ -179,10 +191,20 @@ class EventController
             redirect('/events/' . $eventId);
         }
 
+        // Load existing slots; fall back to event_date/date_text for older events
+        $slots = EventTimeSlot::forEvent($eventId);
+        if (empty($slots) && ($event['event_date'] || $event['date_text'])) {
+            $slots = [[
+                'slot_date' => $event['event_date'],
+                'slot_text' => $event['date_text'],
+            ]];
+        }
+
         render('event/edit', [
             'pageTitle' => Lang::t('event.edit_title'),
             'event'     => $event,
             'group'     => Group::findById((int)$event['group_id']),
+            'slots'     => $slots,
             'error'     => Session::flash('error'),
         ]);
     }
@@ -236,6 +258,20 @@ class EventController
             'notes'                   => trim($_POST['notes'] ?? ''),
         ]);
 
+        // Replace proposed time slots
+        EventTimeSlot::replaceForEvent($eventId, self::parseSlotsFromPost());
+
+        // Notify group members about the change
+        $updatedEvent = Event::findById($eventId);
+        $creator      = User::findById((int)$updatedEvent['creator_id']);
+        $actor        = User::findById($userId);
+        $members      = Group::members((int)$updatedEvent['group_id']);
+        $savedSlots   = EventTimeSlot::forEvent($eventId);
+        Mailer::sendEventUpdated(
+            $updatedEvent, Group::findById((int)$updatedEvent['group_id']),
+            $members, $creator, $savedSlots, $userId, $actor
+        );
+
         Session::flash('success', Lang::t('event.edit_saved'));
         redirect('/events/' . $eventId);
     }
@@ -261,6 +297,12 @@ class EventController
         }
 
         $groupId = (int)$event['group_id'];
+        $group   = Group::findById($groupId);
+        $members = Group::members($groupId);
+
+        // Notify BEFORE deletion (cascade removes the event row)
+        Mailer::sendEventDeleted($event, $group, $members, $userId);
+
         Event::delete($eventId);
         redirect('/groups/' . $groupId);
     }
@@ -285,8 +327,52 @@ class EventController
             redirect('/events/' . $eventId);
         }
 
-        Event::updateStatus($eventId, $_POST['status'] ?? '');
+        $oldStatus = $event['status'];
+        $newStatus = $_POST['status'] ?? '';
+        Event::updateStatus($eventId, $newStatus);
+
+        // Notify if status actually changed
+        if ($newStatus && $newStatus !== $oldStatus) {
+            $updatedEvent = Event::findById($eventId);
+            $actor        = User::findById($userId);
+            $members      = Group::members((int)$event['group_id']);
+            Mailer::sendStatusChanged(
+                $updatedEvent, Group::findById((int)$event['group_id']),
+                $members, $actor, $oldStatus, $userId
+            );
+        }
+
         redirect('/events/' . $eventId);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /**
+     * Parse proposed time slots from POST data.
+     *
+     * Expects three parallel arrays posted as:
+     *   slot_mode[]  – 'date' | 'text' for each slot
+     *   slot_date[]  – DATE value (used when mode = 'date')
+     *   slot_text[]  – free text  (used when mode = 'text')
+     *
+     * @return array<int, array{mode: string, date: string, text: string}>
+     */
+    private static function parseSlotsFromPost(): array
+    {
+        $modes = $_POST['slot_mode'] ?? [];
+        $dates = $_POST['slot_date'] ?? [];
+        $texts = $_POST['slot_text'] ?? [];
+        $slots = [];
+
+        foreach (array_keys((array)$modes) as $i) {
+            $slots[] = [
+                'mode' => $modes[$i] ?? 'date',
+                'date' => $dates[$i] ?? '',
+                'text' => trim($texts[$i] ?? ''),
+            ];
+        }
+
+        return $slots;
     }
 
     // ── Feedback ──────────────────────────────────────────────────────────────
@@ -324,6 +410,13 @@ class EventController
         }
 
         Response::upsert($eventId, $userId, $interest, $mood, $willingness);
+
+        // Notify the event creator about the new/updated feedback
+        $creator  = User::findById((int)$event['creator_id']);
+        $actor    = User::findById($userId);
+        $response = ['interest_level' => $interest, 'mood_level' => $mood, 'willingness_level' => $willingness];
+        if ($creator) Mailer::sendFeedbackReceived($event, $creator, $actor, $response);
+
         Session::flash('success', Lang::t('event.feedback_saved'));
         redirect('/events/' . $eventId);
     }

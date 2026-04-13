@@ -62,6 +62,24 @@ SET @sql = IF(@exists = 0,
   'SELECT "events.deadline_decision_text already exists"');
 PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
 
+-- ── event_time_slots table ───────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS event_time_slots (
+    id          INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
+    event_id    INT UNSIGNED  NOT NULL,
+    slot_date   DATE          NULL,
+    slot_text   VARCHAR(255)  NULL,
+    sort_order  TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Migrate existing event_date / date_text into event_time_slots (one-time, idempotent)
+INSERT INTO event_time_slots (event_id, slot_date, slot_text, sort_order)
+SELECT id, event_date, date_text, 0
+FROM events
+WHERE (event_date IS NOT NULL OR date_text IS NOT NULL)
+  AND id NOT IN (SELECT DISTINCT event_id FROM event_time_slots);
+
 -- ── Settings table ────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS settings (

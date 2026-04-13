@@ -23,36 +23,26 @@
             <textarea id="description" name="description" rows="3"></textarea>
         </div>
 
-        <div class="field-row">
-            <div class="field">
-                <label for="location">
-                    <?= e(Lang::t('event.field_location')) ?>
-                    <span class="field-optional"><?= e(Lang::t('event.optional')) ?></span>
-                </label>
-                <input type="text" id="location" name="location" maxlength="255">
-            </div>
+        <div class="field">
+            <label for="location">
+                <?= e(Lang::t('event.field_location')) ?>
+                <span class="field-optional"><?= e(Lang::t('event.optional')) ?></span>
+            </label>
+            <input type="text" id="location" name="location" maxlength="255">
+        </div>
 
-            <!-- Event date: toggle between date picker and free text -->
-            <div class="field">
-                <label>
-                    <?= e(Lang::t('event.field_date')) ?>
-                    <span class="field-optional"><?= e(Lang::t('event.optional')) ?></span>
-                </label>
-                <div class="date-mode-toggle">
-                    <label class="date-mode-label">
-                        <input type="radio" name="date_mode" value="date" onchange="toggleDateMode('date_field')" checked>
-                        <?= e(Lang::t('event.date_mode_picker')) ?>
-                    </label>
-                    <label class="date-mode-label">
-                        <input type="radio" name="date_mode" value="text" onchange="toggleDateMode('date_field')">
-                        <?= e(Lang::t('event.date_mode_text')) ?>
-                    </label>
-                </div>
-                <input type="date" id="event_date" name="event_date" class="date-input-picker">
-                <input type="text" id="date_text" name="date_text" maxlength="255"
-                       placeholder="pl. jövő hétvégén, TBD"
-                       class="date-input-text" style="display:none">
+        <!-- Proposed time slots -->
+        <div class="field">
+            <label>
+                <?= e(Lang::t('event.field_time_slots')) ?>
+                <span class="field-optional"><?= e(Lang::t('event.optional')) ?></span>
+            </label>
+            <div id="slots-container">
+                <!-- First slot rendered by JS on page load -->
             </div>
+            <button type="button" class="btn btn-ghost btn-sm slot-add-btn" onclick="addSlot()">
+                <?= e(Lang::t('event.add_time_slot')) ?>
+            </button>
         </div>
 
         <!-- Deadline signup -->
@@ -125,11 +115,11 @@
 </div>
 
 <script>
+// ── Deadline date-mode toggle (unchanged) ─────────────────────────────────
 function toggleDateMode(group) {
     const modes = {
-        date_field: { picker: '.date-input-picker',   text: '.date-input-text',   radio: 'date_mode' },
-        dl_signup:  { picker: '.dl-signup-picker',    text: '.dl-signup-text',    radio: 'deadline_signup_mode' },
-        dl_decision:{ picker: '.dl-decision-picker',  text: '.dl-decision-text',  radio: 'deadline_decision_mode' },
+        dl_signup:  { picker: '.dl-signup-picker', text: '.dl-signup-text', radio: 'deadline_signup_mode' },
+        dl_decision:{ picker: '.dl-decision-picker', text: '.dl-decision-text', radio: 'deadline_decision_mode' },
     };
     const cfg    = modes[group];
     const picker = document.querySelector(cfg.picker);
@@ -140,4 +130,67 @@ function toggleDateMode(group) {
     if (val === 'date') { text.value   = ''; }
     else                { picker.value = ''; }
 }
+
+// ── Proposed time slots ───────────────────────────────────────────────────
+let slotCounter = -1;
+
+function createSlotRow(idx, mode, dateVal, textVal) {
+    const row = document.createElement('div');
+    row.className = 'slot-row';
+    row.dataset.slotIndex = idx;
+
+    const modeDate = (mode === 'date');
+    row.innerHTML =
+        '<div class="date-mode-toggle">' +
+            '<label class="date-mode-label">' +
+                '<input type="radio" name="slot_mode[' + idx + ']" value="date"' + (modeDate ? ' checked' : '') +
+                ' onchange="toggleSlotMode(' + idx + ')">' +
+                <?= json_encode(Lang::t('event.date_mode_picker')) ?> +
+            '</label>' +
+            '<label class="date-mode-label">' +
+                '<input type="radio" name="slot_mode[' + idx + ']" value="text"' + (!modeDate ? ' checked' : '') +
+                ' onchange="toggleSlotMode(' + idx + ')">' +
+                <?= json_encode(Lang::t('event.date_mode_text')) ?> +
+            '</label>' +
+        '</div>' +
+        '<input type="date" name="slot_date[' + idx + ']" value="' + escAttr(dateVal) + '"' +
+               (!modeDate ? ' style="display:none"' : '') + '>' +
+        '<input type="text" name="slot_text[' + idx + ']" value="' + escAttr(textVal) + '"' +
+               ' maxlength="255" placeholder="pl. jövő hétvégén, TBD"' +
+               (modeDate ? ' style="display:none"' : '') + '>' +
+        '<button type="button" class="btn btn-ghost btn-sm slot-remove-btn" onclick="removeSlot(this)">' +
+            <?= json_encode(Lang::t('event.remove_time_slot')) ?> +
+        '</button>';
+
+    return row;
+}
+
+function addSlot(mode, dateVal, textVal) {
+    slotCounter++;
+    const row = createSlotRow(slotCounter, mode || 'date', dateVal || '', textVal || '');
+    document.getElementById('slots-container').appendChild(row);
+}
+
+function removeSlot(btn) {
+    btn.closest('.slot-row').remove();
+}
+
+function toggleSlotMode(idx) {
+    const checked = document.querySelector('input[name="slot_mode[' + idx + ']"]:checked');
+    if (!checked) return;
+    const mode   = checked.value;
+    const picker = document.querySelector('input[name="slot_date[' + idx + ']"]');
+    const text   = document.querySelector('input[name="slot_text[' + idx + ']"]');
+    picker.style.display = mode === 'date' ? '' : 'none';
+    text.style.display   = mode === 'text' ? '' : 'none';
+    if (mode === 'date') { text.value   = ''; }
+    else                 { picker.value = ''; }
+}
+
+function escAttr(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+// Start with one empty slot
+addSlot('date', '', '');
 </script>

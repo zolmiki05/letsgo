@@ -1070,3 +1070,21 @@ h1, h2, h3, h4 {
 
 /* ── Nav username ───────────────────────────────────────────── */
 .nav-username { font-weight: 600; }
+
+/* ── Time slot rows ─────────────────────────────────────────── */
+.slot-row {
+  display: flex; align-items: center; gap: .5rem;
+  flex-wrap: wrap;
+  padding: .5rem .6rem;
+  background: var(--surface-alt, var(--bg-card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: .4rem;
+}
+.slot-row input[type=date],
+.slot-row input[type=text] { flex: 1; min-width: 0; }
+.slot-row .date-mode-toggle { flex: 0 0 auto; margin-bottom: 0; }
+.slot-remove-btn { flex: 0 0 auto; color: var(--danger, #e55); }
+.slot-add-btn { margin-top: .25rem; }
+.slot-list { margin: 0; padding-left: 1.1rem; }
+.slot-list li { margin-bottom: .15rem; }

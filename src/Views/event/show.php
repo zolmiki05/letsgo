@@ -38,10 +38,28 @@
                     <dd><?= e($event['location']) ?></dd>
                 </div>
                 <?php endif; ?>
-                <?php if ($event['event_date'] || $event['date_text']): ?>
+                <?php
+                // Proposed time slots (new system); fall back to legacy event_date/date_text
+                $displaySlots = $slots;
+                if (empty($displaySlots) && ($event['event_date'] || $event['date_text'])) {
+                    $displaySlots = [['slot_date' => $event['event_date'], 'slot_text' => $event['date_text']]];
+                }
+                ?>
+                <?php if (!empty($displaySlots)): ?>
                 <div class="detail-row">
-                    <dt><?= e(Lang::t('event.field_date')) ?></dt>
-                    <dd><?= $event['event_date'] ? e(fmtDate($event['event_date'])) : e($event['date_text']) ?></dd>
+                    <dt><?= e(Lang::t('event.field_time_slots')) ?></dt>
+                    <dd>
+                        <?php if (count($displaySlots) === 1): ?>
+                            <?php $s = $displaySlots[0]; ?>
+                            <?= $s['slot_date'] ? e(fmtDate($s['slot_date'])) : e($s['slot_text']) ?>
+                        <?php else: ?>
+                            <ul class="slot-list">
+                            <?php foreach ($displaySlots as $s): ?>
+                                <li><?= $s['slot_date'] ? e(fmtDate($s['slot_date'])) : e($s['slot_text']) ?></li>
+                            <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                    </dd>
                 </div>
                 <?php endif; ?>
                 <?php if ($event['deadline_signup'] || ($event['deadline_signup_text'] ?? '')): ?>

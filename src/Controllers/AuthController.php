@@ -268,6 +268,10 @@ class AuthController
         }
 
         User::changePassword($userId, $new);
+
+        $user = User::findById($userId);
+        if ($user) Mailer::sendPasswordChanged($user);
+
         Session::flash('success', Lang::t('profile.password_changed'));
         redirect('/profile/password');
     }

@@ -47,7 +47,11 @@ require_once ROOT . '/src/Models/User.php';
 require_once ROOT . '/src/Models/Group.php';
 require_once ROOT . '/src/Models/Invite.php';
 require_once ROOT . '/src/Models/Event.php';
+require_once ROOT . '/src/Models/EventTimeSlot.php';
 require_once ROOT . '/src/Models/Response.php';
+
+// ── Core services (continued) ─────────────────────────────────────────────────
+require_once ROOT . '/src/Core/Mailer.php';
 
 // ── Controllers ───────────────────────────────────────────────────────────────
 require_once ROOT . '/src/Controllers/AuthController.php';
