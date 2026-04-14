@@ -35,10 +35,24 @@ if [ ! -f "$ENV_FILE" ]; then
     exit 1
 fi
 
-set -o allexport
-# shellcheck source=/dev/null
-source "$ENV_FILE"
-set +o allexport
+# Load .env safely: only export lines that match KEY=VALUE.
+# Using `source` with allexport is unsafe – it executes every non-comment
+# line as a shell command, which breaks on values with spaces or special chars.
+_load_env() {
+    local file="$1"
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # Strip trailing carriage return (CRLF files)
+        line="${line%$'\r'}"
+        # Skip blank lines and comments
+        [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+        # Only process valid KEY=VALUE lines
+        if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+            export "${BASH_REMATCH[1]}"="${BASH_REMATCH[2]}"
+        fi
+    done < "$file"
+}
+
+_load_env "$ENV_FILE"
 
 # ── Sync missing keys from .env.example ──────────────────────────────────────
 # Compares .env against .env.example; for every key that is in the example but
@@ -127,9 +141,7 @@ if [ -f "$EXAMPLE_FILE" ]; then
             echo ""
             echo "  ✓ Added ${#missing_keys[@]} key(s) to .env"
             # Reload .env so new values are available for the rest of the script
-            set -o allexport
-            source "$ENV_FILE"
-            set +o allexport
+            _load_env "$ENV_FILE"
         fi
         rm -f "$additions_file"
         echo ""
