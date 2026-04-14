@@ -51,6 +51,6 @@ class Csrf
      */
     public static function field(): string
     {
-        return '<input type="hidden" name="_csrf_token" value="' . e(self::token()) . '">';
+        return '<input type="hidden" name="_csrf_token" value="' . htmlspecialchars(self::token(), ENT_QUOTES, 'UTF-8') . '">';
     }
 }

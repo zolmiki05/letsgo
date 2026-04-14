@@ -35,10 +35,15 @@ test:phpunit:
       php -r "
         \$pdo = new PDO('mysql:host=db;dbname=letsgo_test;charset=utf8mb4', 'letsgo', 'letsgo_test_secret');
         \$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        // Strip the CREATE DATABASE / USE lines – the DB already exists
+        // Apply init.sql – strip the CREATE DATABASE / USE lines (DB already exists)
         \$sql = file_get_contents('docker/mysql/init.sql');
         \$sql = preg_replace('/^CREATE DATABASE.*?;\s*/ims', '', \$sql);
         \$sql = preg_replace('/^USE\s+\S+\s*;\s*/ims', '', \$sql);
+        foreach (array_filter(array_map('trim', explode(';', \$sql))) as \$stmt) {
+            \$pdo->exec(\$stmt);
+        }
+        // Apply upgrade.sql – additive migrations (new tables and columns)
+        \$sql = file_get_contents('docker/mysql/upgrade.sql');
         foreach (array_filter(array_map('trim', explode(';', \$sql))) as \$stmt) {
             \$pdo->exec(\$stmt);
         }
