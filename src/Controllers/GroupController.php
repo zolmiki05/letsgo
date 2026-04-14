@@ -163,6 +163,48 @@ class GroupController
         redirect('/');
     }
 
+    // ── Archive / Unarchive ───────────────────────────────────────────────────
+
+    /**
+     * Archive a group (owner only).
+     * Archived groups are hidden from the main dashboard but can still be accessed directly.
+     */
+    public function archive(array $params): void
+    {
+        $userId  = requireAuth();
+        $groupId = (int)$params['id'];
+        $group   = Group::findById($groupId);
+
+        if (!$group || (int)$group['owner_id'] !== $userId) {
+            Session::flash('error', Lang::t('group.errors.not_admin'));
+            redirect('/groups/' . $groupId);
+        }
+
+        Group::archive($groupId);
+        Session::flash('success', Lang::t('group.archived'));
+        redirect('/');
+    }
+
+    /**
+     * Unarchive a group (owner only).
+     * Moves the group back to the active dashboard.
+     */
+    public function unarchive(array $params): void
+    {
+        $userId  = requireAuth();
+        $groupId = (int)$params['id'];
+        $group   = Group::findById($groupId);
+
+        if (!$group || (int)$group['owner_id'] !== $userId) {
+            Session::flash('error', Lang::t('group.errors.not_admin'));
+            redirect('/');
+        }
+
+        Group::unarchive($groupId);
+        Session::flash('success', Lang::t('group.unarchived'));
+        redirect('/groups/' . $groupId);
+    }
+
     // ── Invite link generation ────────────────────────────────────────────────
 
     /**

@@ -10,6 +10,7 @@
 <div class="card" style="margin-bottom:1rem">
     <h2 class="card-title"><?= e(Lang::t('admin.settings_section_app')) ?></h2>
     <form method="POST" action="/admin/settings" class="form-stack">
+        <?= csrfField() ?>
 
         <label class="toggle-row">
             <div class="toggle-info">

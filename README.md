@@ -4,7 +4,7 @@
 
 Letsgo is a web application for friend groups, teams, and communities to collect programme ideas, rate them as a group, and collaboratively decide what to do next.
 
-**Version:** 1.0.0 · **Primary repo:** GitLab · **GitHub:** read-only mirror
+**Version:** 1.2.0 · **Primary repo:** GitLab · **GitHub:** read-only mirror
 
 ---
 
@@ -13,12 +13,15 @@ Letsgo is a web application for friend groups, teams, and communities to collect
 - **Accounts** — invite-code-gated or open registration; login by email or username
 - **Groups** — create groups, invite members via 24-hour links, manage membership
 - **Programme ideas** — propose events with title, description, location, date, deadlines, cost, notes
+- **Multiple time slots** — attach several proposed date options to a single event
 - **Flexible dates** — each date field accepts either a date picker or free text ("next weekend", "TBD")
 - **Three-scale feedback** — rate each idea on Interest / Mood / Willingness (1–10); group averages shown as progress bars
 - **Status lifecycle** — Idea → Discussing → Final / Cancelled (creator-managed)
 - **Upcoming deadlines** — dashboard widget for events with deadlines in the next 7 days
 - **Admin panel** — user management (ban/unban/delete), registration toggle, group-creation toggle, invite code management
+- **Password reset** — email-based reset flow with time-limited tokens
 - **Password change** — logged-in users can update their password
+- **HTML email notifications** — invite and reset emails sent with plain-text + HTML parts
 - **Invite link persistence** — unauthenticated users who follow a group invite link are redirected back after login
 - **Dark/light theme** — toggle with `localStorage` persistence
 - **Hungarian UI** — all strings in `lang/hu.json`; easily translatable
@@ -40,16 +43,16 @@ Letsgo is a web application for friend groups, teams, and communities to collect
 ## Quick Start
 
 ```bash
-# Clone
+# 1. Clone
 git clone <repo-url> letsgo && cd letsgo
 
-# Configure (adjust DB passwords at minimum)
-cp .env.example .env
+# 2. Generate .env with random credentials (recommended)
+bash setup.sh
 
-# Start
+# 3. Start
 docker compose up -d
 
-# Open
+# 4. Open
 open http://localhost:8080
 ```
 
@@ -63,13 +66,21 @@ docker compose down -v       # also delete DB volume
 
 ---
 
-## Upgrading an Existing Database
+## Upgrading an Existing Installation
+
+Use `upgrade.sh` for a safe, backed-up schema upgrade:
 
 ```bash
-docker exec -i letsgo_db mysql -u root -p<password> < docker/mysql/upgrade.sql
+bash upgrade.sh [backup-dir] [upgrade-sql]
 ```
 
-The script is idempotent (safe to run multiple times).
+The script:
+1. Creates a timestamped database dump in `./backups/` (or your chosen directory)
+2. Stops the stack
+3. Starts the database container and applies `docker/mysql/upgrade.sql`
+4. Restarts the full stack
+
+The SQL migration is **idempotent** — safe to run multiple times.
 
 ---
 
@@ -80,7 +91,7 @@ letsgo/
 ├── docker/
 │   ├── mysql/
 │   │   ├── init.sql        # Schema (fresh install)
-│   │   └── upgrade.sql     # Migration (existing DB)
+│   │   └── upgrade.sql     # Additive migration (existing DB)
 │   └── php/Dockerfile      # PHP 8.2 + Apache
 ├── docs/                   # Full documentation (wiki-ready)
 ├── lang/hu.json            # All UI strings (Hungarian)
@@ -95,6 +106,10 @@ letsgo/
 │   ├── Controllers/        # Auth, Admin, Dashboard, Group, Event, Invite
 │   └── Views/              # PHP templates (layout + per-feature)
 ├── storage/                # Writable at runtime (setup log)
+├── backups/                # Database backups created by upgrade.sh (git-ignored)
+├── setup.sh                # First-time .env generator
+├── upgrade.sh              # Full upgrade runner (backup → migrate → restart)
+├── migrate.sh              # Lightweight schema-only runner (no backup/restart)
 ├── CHANGELOG.md
 ├── VERSION
 └── docker-compose.yml
@@ -108,7 +123,7 @@ Full documentation lives in the [`docs/`](docs/) directory:
 
 | Doc | Contents |
 |---|---|
-| [Installation](docs/installation.md) | Docker setup, env vars, production checklist |
+| [Installation](docs/installation.md) | Docker setup, env vars, setup.sh, upgrade.sh, production checklist |
 | [Architecture](docs/architecture.md) | Stack, request lifecycle, security model |
 | [Database](docs/database.md) | Schema reference, ERD, migrations |
 | [Routes](docs/routes.md) | All endpoints and access levels |
@@ -131,10 +146,12 @@ Full documentation lives in the [`docs/`](docs/) directory:
 |---|---|
 | Create a group | Any user (unless admin-restricted) |
 | Delete a group | Group owner |
+| Rename a group | Group owner |
 | Generate invite link | Group owner |
 | Join a group | Any authenticated user with a valid token |
 | Create a programme idea | Any group member |
 | Change status / delete idea | Creator only |
+| Edit idea | Creator only |
 | Submit / update feedback | Any group member |
 | Admin panel | Admin accounts only |
 | Ban / delete users | Admin only |

@@ -28,9 +28,10 @@ class DashboardController
         $userId = requireAuth();
 
         render('dashboard/index', [
-            'pageTitle' => Lang::t('dashboard.title'),
-            'groups'    => Group::forUser($userId),           // groups with member_count
-            'deadlines' => Event::upcomingDeadlines($userId), // next 7 days, all groups
+            'pageTitle'      => Lang::t('dashboard.title'),
+            'groups'         => Group::forUser($userId),              // active groups
+            'archivedGroups' => Group::forUser($userId, true),        // archived groups
+            'deadlines'      => Event::upcomingDeadlines($userId),    // next 7 days
         ]);
     }
 }

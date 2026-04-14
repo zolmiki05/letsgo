@@ -70,8 +70,12 @@ class AuthController
             redirect('/login');
         }
 
+        // Rate-limit: 10 failed attempts per 5 min per IP aborts with 429
+        RateLimiter::check('login');
+
         $user = User::verify($identifier, $password);
         if (!$user) {
+            RateLimiter::hit('login');
             // Provide a specific message for banned accounts (better UX than generic error)
             $found = User::findByIdentifier($identifier);
             if ($found && (int)($found['is_banned'] ?? 0) === 1) {
@@ -209,6 +213,96 @@ class AuthController
     public function logout(array $params): void
     {
         Session::logout();
+        redirect('/login');
+    }
+
+    // ── Forgot password ───────────────────────────────────────────────────────
+
+    public function forgotForm(array $params): void
+    {
+        if (Session::userId()) redirect('/');
+        render('auth/forgot', [
+            'pageTitle' => Lang::t('auth.forgot_title'),
+            'error'     => Session::flash('error'),
+            'success'   => Session::flash('success'),
+        ]);
+    }
+
+    public function forgot(array $params): void
+    {
+        if (Session::userId()) redirect('/');
+
+        // Rate-limit: 5 attempts per 10 min per IP
+        RateLimiter::check('forgot');
+        RateLimiter::hit('forgot');
+
+        $email = trim($_POST['email'] ?? '');
+        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Session::flash('error', Lang::t('auth.errors.email_invalid'));
+            redirect('/forgot-password');
+        }
+
+        // Always show the same success message to prevent email enumeration
+        $user = User::findByEmail($email);
+        if ($user && !(int)($user['is_banned'] ?? 0)) {
+            PasswordReset::purgeExpired();
+            $token = PasswordReset::create((int)$user['id']);
+            Mailer::sendPasswordReset($user, $token);
+        }
+
+        Session::flash('success', Lang::t('auth.forgot_sent'));
+        redirect('/forgot-password');
+    }
+
+    // ── Reset password ────────────────────────────────────────────────────────
+
+    public function resetForm(array $params): void
+    {
+        if (Session::userId()) redirect('/');
+
+        $token = trim($_GET['token'] ?? '');
+        $reset = $token ? PasswordReset::findValid($token) : null;
+
+        if (!$reset) {
+            Session::flash('error', Lang::t('auth.errors.reset_token_invalid'));
+            redirect('/forgot-password');
+        }
+
+        render('auth/reset', [
+            'pageTitle' => Lang::t('auth.reset_title'),
+            'token'     => $token,
+            'error'     => Session::flash('error'),
+        ]);
+    }
+
+    public function reset(array $params): void
+    {
+        if (Session::userId()) redirect('/');
+
+        $token   = trim($_POST['token'] ?? '');
+        $new     = $_POST['new_password']     ?? '';
+        $confirm = $_POST['confirm_password'] ?? '';
+
+        $reset = $token ? PasswordReset::findValid($token) : null;
+        if (!$reset) {
+            Session::flash('error', Lang::t('auth.errors.reset_token_invalid'));
+            redirect('/forgot-password');
+        }
+
+        if (strlen($new) < 6) {
+            Session::flash('error', Lang::t('auth.errors.password_short'));
+            redirect('/reset-password?token=' . urlencode($token));
+        }
+
+        if ($new !== $confirm) {
+            Session::flash('error', Lang::t('profile.errors.passwords_mismatch'));
+            redirect('/reset-password?token=' . urlencode($token));
+        }
+
+        User::changePassword((int)$reset['user_id'], $new);
+        PasswordReset::consume($token);
+
+        Session::flash('success', Lang::t('auth.reset_success'));
         redirect('/login');
     }
 

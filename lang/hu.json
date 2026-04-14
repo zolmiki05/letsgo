@@ -8,7 +8,9 @@
     "logout": "Kilépés",
     "login": "Belépés",
     "register": "Regisztráció",
-    "admin": "Admin"
+    "admin": "Admin",
+    "notifications": "Értesítések",
+    "switch_language": "Nyelv váltása"
   },
   "auth": {
     "identifier": "E-mail vagy felhasználónév",
@@ -25,6 +27,17 @@
     "login_subtitle": "Jelentkezz be a fiókodba",
     "login_button": "Belépés",
     "login_link": "Nincs még fiókod? Regisztrálj",
+    "forgot_link": "Elfelejtett jelszó?",
+    "forgot_title": "Elfelejtett jelszó",
+    "forgot_subtitle": "Megküldjük a visszaállítási linket e-mailben.",
+    "forgot_submit": "Link küldése",
+    "forgot_sent": "Ha a megadott e-mail cím regisztrált, hamarosan megkapod a visszaállítási linket.",
+    "forgot_back_login": "← Vissza a belépéshez",
+    "reset_title": "Új jelszó beállítása",
+    "reset_new_password": "Új jelszó",
+    "reset_confirm_password": "Új jelszó megerősítése",
+    "reset_submit": "Jelszó mentése",
+    "reset_success": "A jelszavad sikeresen megváltozott. Most bejelentkezhetsz.",
     "register_title": "Csatlakozz!",
     "register_subtitle": "Hozz létre egy új fiókot",
     "register_button": "Regisztráció",
@@ -41,6 +54,7 @@
       "username_invalid": "A felhasználónév 3–30 karakter lehet: betű, szám, pont, kötőjel, aláhúzás.",
       "username_taken": "Ez a felhasználónév már foglalt.",
       "password_short": "A jelszónak legalább 6 karakteresnek kell lennie.",
+      "reset_token_invalid": "Érvénytelen vagy lejárt visszaállítási link. Kérj újat.",
       "invite_required": "A meghívó kód megadása kötelező.",
       "invite_invalid": "Érvénytelen vagy már felhasznált meghívó kód."
     }
@@ -52,6 +66,19 @@
     "confirm_password": "Új jelszó megerősítése",
     "save_button": "Jelszó módosítása",
     "password_changed": "A jelszó sikeresen módosítva.",
+    "notifications_title": "Értesítési beállítások",
+    "notifications_hint": "Kapcsold ki azokat az értesítési típusokat, amelyeket nem szeretnél megkapni e-mailben.",
+    "notifications_save": "Beállítások mentése",
+    "notifications_saved": "Értesítési beállítások elmentve.",
+    "notification_type": {
+      "event_created": "Új programötlet a csoportban",
+      "event_updated": "Programötlet módosítva",
+      "event_deleted": "Programötlet törölve",
+      "status_changed": "Státusz megváltozott",
+      "feedback": "Visszajelzés érkezett az eseményre",
+      "member_joined": "Új tag csatlakozott a csoporthoz",
+      "comment": "Új hozzászólás a programötleten"
+    },
     "errors": {
       "current_wrong": "A megadott jelenlegi jelszó helytelen.",
       "passwords_mismatch": "A két új jelszó nem egyezik meg."
@@ -105,7 +132,8 @@
     "upcoming_deadlines": "Közelgő határidők",
     "no_deadlines": "Nincs közelgő határidő a következő 7 napban.",
     "deadline_signup": "Jelentkezési határidő",
-    "deadline_decision": "Döntési határidő"
+    "deadline_decision": "Döntési határidő",
+    "archived_groups": "Archivált csoportok"
   },
   "group": {
     "create_title": "Új csoport",
@@ -128,6 +156,10 @@
     "members_title": "Tagok",
     "admin_label": "admin",
     "events_title": "Programötletek",
+    "archive_button": "Csoport archiválása",
+    "unarchive_button": "Archiválás visszavonása",
+    "archived": "A csoport archiválva.",
+    "unarchived": "A csoport visszaállítva az aktív nézetbe.",
     "errors": {
       "name_required": "A csoport nevének megadása kötelező.",
       "not_found": "A csoport nem található.",
@@ -184,11 +216,33 @@
     "update_status": "Státusz módosítása",
     "details": "Részletek",
     "no_description": "Nincs leírás.",
+    "slot_vote_title": "Időpont szavazás",
+    "slot_vote_hint": "Jelöld, melyik időpont megfelelő számodra.",
+    "comments_title": "Hozzászólások",
+    "no_comments": "Még nincs hozzászólás.",
+    "comment_placeholder": "Írj hozzászólást...",
+    "comment_submit": "Küldés",
+    "comment_delete": "Törlés",
+    "comment_delete_confirm": "Biztosan törlöd ezt a hozzászólást?",
     "errors": {
       "title_required": "A cím megadása kötelező.",
       "not_found": "A programötlet nem található.",
       "not_creator": "Csak a létrehozó módosíthatja a státuszt.",
-      "invalid_feedback": "Érvénytelen visszajelzési értékek (1–10 között kell lenniük)."
+      "invalid_feedback": "Érvénytelen visszajelzési értékek (1–10 között kell lenniük).",
+      "comment_empty": "A hozzászólás nem lehet üres.",
+      "comment_too_long": "A hozzászólás maximum 2000 karakter lehet."
+    }
+  },
+  "invite": {
+    "title": "Meghívó",
+    "subtitle": "Csatlakozol a csoporthoz",
+    "join_button": "Csatlakozás",
+    "already_member": "Már tagja vagy ennek a csoportnak.",
+    "go_to_group": "Ugrás a csoporthoz",
+    "errors": {
+      "invalid_token": "Érvénytelen meghívó link.",
+      "expired_token": "Ez a meghívó link lejárt.",
+      "not_found": "A meghívó nem található."
     }
   },
   "email": {
@@ -225,24 +279,25 @@
     "status_changed_body": ":actor módosította a :title státuszát: :old_status → :new_status.",
     "member_joined_subject": "Új tag csatlakozott: :name",
     "member_joined_title": "Új tag a csoportban",
-    "member_joined_body": ":name csatlakozott a :group csoporthoz."
-  },
-  "invite": {
-    "title": "Meghívó",
-    "subtitle": "Csatlakozol a csoporthoz",
-    "join_button": "Csatlakozás",
-    "already_member": "Már tagja vagy ennek a csoportnak.",
-    "go_to_group": "Ugrás a csoporthoz",
-    "errors": {
-      "invalid_token": "Érvénytelen meghívó link.",
-      "expired_token": "Ez a meghívó link lejárt.",
-      "not_found": "A meghívó nem található."
-    }
+    "member_joined_body": ":name csatlakozott a :group csoporthoz.",
+    "password_reset_subject": "Jelszó visszaállítása",
+    "password_reset_title": "Jelszó visszaállítása",
+    "password_reset_body": "Jelszó visszaállítást kértél a Letsgo fiókodhoz. Kattints az alábbi gombra az új jelszó beállításához.",
+    "password_reset_btn": "Jelszó visszaállítása",
+    "password_reset_expiry": "Ez a link 1 óráig érvényes.",
+    "password_reset_ignore": "Ha nem te kérted, hagyd figyelmen kívül ezt az emailt.",
+    "comment_subject": "Új hozzászólás: :title",
+    "comment_title": "Új hozzászólás érkezett",
+    "comment_body": ":author hozzászólt a :title programötlethez."
   },
   "errors": {
     "404_title": "Az oldal nem található",
     "404_text": "Ez az oldal nem létezik vagy eltávolítottuk.",
     "back_home": "Vissza a főoldalra",
-    "unauthorized": "Nincs jogosultságod ehhez a művelethez."
+    "unauthorized": "Nincs jogosultságod ehhez a művelethez.",
+    "csrf_title": "Érvénytelen kérés",
+    "csrf_text": "Az oldalra érkező kérés biztonsági ellenőrzése nem sikerült. Kérjük, próbálkozz újra.",
+    "csrf_back": "← Vissza",
+    "rate_limited": "Túl sok próbálkozás. Kérjük, várj egy kicsit, majd próbálkozz újra."
   }
 }

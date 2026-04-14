@@ -21,6 +21,7 @@
         <?php endif; ?>
 
         <form method="POST" action="/login" class="form-stack">
+            <?= csrfField() ?>
             <div class="field">
                 <label for="identifier"><?= e(Lang::t('auth.identifier')) ?></label>
                 <input type="text" id="identifier" name="identifier" required autocomplete="username" autofocus
@@ -35,6 +36,8 @@
 
         <p class="auth-switch">
             <a href="/register"><?= e(Lang::t('auth.login_link')) ?></a>
+            &nbsp;·&nbsp;
+            <a href="/forgot-password"><?= e(Lang::t('auth.forgot_link')) ?></a>
         </p>
     </div>
 </div>

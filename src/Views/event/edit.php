@@ -14,6 +14,7 @@ $dlDecMode   = $event['deadline_decision'] ? 'date' : 'text';
 
 <div class="card">
     <form method="POST" action="/events/<?= (int)$event['id'] ?>/edit" class="form-stack">
+        <?= csrfField() ?>
 
         <div class="field">
             <label for="title"><?= e(Lang::t('event.field_title')) ?></label>

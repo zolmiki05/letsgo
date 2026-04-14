@@ -79,6 +79,7 @@
         <div class="card">
             <h3 class="card-title"><?= e(Lang::t('group.rename_title')) ?></h3>
             <form method="POST" action="/groups/<?= (int)$group['id'] ?>/rename" class="rename-form">
+                <?= csrfField() ?>
                 <div class="rename-row">
                     <input type="text" name="name" class="rename-input"
                            value="<?= e($group['name']) ?>" maxlength="255" required>
@@ -106,8 +107,19 @@
             </p>
             <?php endif; ?>
             <form method="POST" action="/groups/<?= (int)$group['id'] ?>/invite">
+                <?= csrfField() ?>
                 <button type="submit" class="btn btn-outline btn-sm btn-full">
                     <?= e(Lang::t('group.invite_generate')) ?>
+                </button>
+            </form>
+        </div>
+
+        <!-- Archive -->
+        <div class="card">
+            <form method="POST" action="/groups/<?= (int)$group['id'] ?>/archive">
+                <?= csrfField() ?>
+                <button type="submit" class="btn btn-outline btn-full">
+                    <?= e(Lang::t('group.archive_button')) ?>
                 </button>
             </form>
         </div>
@@ -116,6 +128,7 @@
         <div class="card card-danger">
             <form method="POST" action="/groups/<?= (int)$group['id'] ?>/delete"
                   onsubmit="return confirm('<?= e(Lang::t('group.delete_confirm')) ?>')">
+                <?= csrfField() ?>
                 <button type="submit" class="btn btn-danger btn-full">
                     <?= e(Lang::t('group.delete_button')) ?>
                 </button>

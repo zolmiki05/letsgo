@@ -96,6 +96,11 @@ class Router
                 continue;
             }
 
+            // Verify CSRF token for every state-mutating request
+            if ($method === 'POST') {
+                Csrf::verify();
+            }
+
             // preg_match returns both numeric and named captures; keep only named ones
             $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
 

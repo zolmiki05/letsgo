@@ -41,3 +41,21 @@
     <?php endforeach; ?>
 </div>
 <?php endif; ?>
+
+<?php if (!empty($archivedGroups)): ?>
+<section class="archived-section" style="margin-top:2.5rem">
+    <h2 class="section-title" style="color:var(--text-muted)"><?= e(Lang::t('dashboard.archived_groups')) ?></h2>
+    <div class="group-grid group-grid-archived">
+        <?php foreach ($archivedGroups as $group): ?>
+        <div class="group-card group-card-archived" style="opacity:.65">
+            <a href="/groups/<?= (int)$group['id'] ?>" class="group-card-name"><?= e($group['name']) ?></a>
+            <div class="group-card-meta"><?= (int)$group['member_count'] ?> <?= e(Lang::t('dashboard.members_count')) ?></div>
+            <form method="POST" action="/groups/<?= (int)$group['id'] ?>/unarchive" class="inline-form" style="margin-top:.5rem">
+                <?= csrfField() ?>
+                <button type="submit" class="btn btn-ghost btn-xs"><?= e(Lang::t('group.unarchive_button')) ?></button>
+            </form>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>

@@ -20,6 +20,7 @@
             <strong><?= e($group['name']) ?></strong>
         </p>
         <form method="POST" action="/join">
+            <?= csrfField() ?>
             <input type="hidden" name="token" value="<?= e($token) ?>">
             <button type="submit" class="btn btn-primary btn-full"><?= e(Lang::t('invite.join_button')) ?></button>
         </form>

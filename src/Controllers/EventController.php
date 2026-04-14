@@ -152,19 +152,24 @@ class EventController
         }
 
         $creator = User::findById((int)$event['creator_id']);
+        $slots   = EventTimeSlot::forEvent($eventId);
 
         render('event/show', [
-            'pageTitle' => e($event['title']),
-            'event'     => $event,
-            'group'     => Group::findById((int)$event['group_id']),
-            'creator'   => $creator,
-            'slots'     => EventTimeSlot::forEvent($eventId),
-            'responses' => Response::forEvent($eventId),
-            'averages'  => Response::averages($eventId), // null if no responses yet
-            'myResp'    => Response::findByEventAndUser($eventId, $userId),
-            'isCreator' => (int)$event['creator_id'] === $userId,
-            'error'     => Session::flash('error'),
-            'success'   => Session::flash('success'),
+            'pageTitle'    => e($event['title']),
+            'event'        => $event,
+            'group'        => Group::findById((int)$event['group_id']),
+            'creator'      => $creator,
+            'slots'        => $slots,
+            'responses'    => Response::forEvent($eventId),
+            'averages'     => Response::averages($eventId),
+            'myResp'       => Response::findByEventAndUser($eventId, $userId),
+            'isCreator'    => (int)$event['creator_id'] === $userId,
+            'comments'     => Comment::forEvent($eventId),
+            'slotVotes'    => SlotVote::votesForEvent($eventId),
+            'mySlotVotes'  => SlotVote::myVotesForEvent($eventId, $userId),
+            'slotTotals'   => SlotVote::totalsForEvent($eventId),
+            'error'        => Session::flash('error'),
+            'success'      => Session::flash('success'),
         ]);
     }
 
@@ -343,6 +348,100 @@ class EventController
         }
 
         redirect('/events/' . $eventId);
+    }
+
+    // ── Slot voting ───────────────────────────────────────────────────────────
+
+    /**
+     * Cast or update a vote on a proposed time slot.
+     *
+     * Expects POST fields:
+     *   slot_id    – event_time_slots.id
+     *   available  – '1' (available) or '0' (unavailable)
+     *
+     * Redirects back to the event page.
+     */
+    public function voteSlot(array $params): void
+    {
+        $userId  = requireAuth();
+        $eventId = (int)$params['id'];
+        $event   = Event::findById($eventId);
+
+        if (!$event || !Group::isMember((int)$event['group_id'], $userId)) {
+            redirect('/');
+        }
+
+        $slotId    = (int)($_POST['slot_id']   ?? 0);
+        $available = (int)($_POST['available'] ?? 1) === 1;
+
+        if ($slotId) {
+            SlotVote::vote($slotId, $userId, $available);
+        }
+
+        redirect('/events/' . $eventId);
+    }
+
+    // ── Comments ──────────────────────────────────────────────────────────────
+
+    /**
+     * Add a comment to an event.
+     *
+     * Validates body is non-empty and max 2000 chars.
+     * Dispatches email notifications to all group members via the queue.
+     */
+    public function addComment(array $params): void
+    {
+        $userId  = requireAuth();
+        $eventId = (int)$params['id'];
+        $event   = Event::findById($eventId);
+
+        if (!$event || !Group::isMember((int)$event['group_id'], $userId)) {
+            redirect('/');
+        }
+
+        $body = trim($_POST['body'] ?? '');
+        if (!$body) {
+            Session::flash('error', Lang::t('event.errors.comment_empty'));
+            redirect('/events/' . $eventId);
+        }
+        if (mb_strlen($body) > 2000) {
+            Session::flash('error', Lang::t('event.errors.comment_too_long'));
+            redirect('/events/' . $eventId);
+        }
+
+        Comment::create($eventId, $userId, $body);
+
+        $author  = User::findById($userId);
+        $group   = Group::findById((int)$event['group_id']);
+        $members = Group::members((int)$event['group_id']);
+        Mailer::sendEventComment($event, $group, $members, $author, $userId, $body);
+
+        redirect('/events/' . $eventId . '#comments');
+    }
+
+    /**
+     * Delete a comment (author or admin only).
+     */
+    public function deleteComment(array $params): void
+    {
+        $userId    = requireAuth();
+        $commentId = (int)$params['cid'];
+        $comment   = Comment::findById($commentId);
+
+        if (!$comment) redirect('/');
+
+        $event = Event::findById((int)$comment['event_id']);
+        if (!$event || !Group::isMember((int)$event['group_id'], $userId)) {
+            redirect('/');
+        }
+
+        if ((int)$comment['user_id'] !== $userId && !User::isAdmin($userId)) {
+            Session::flash('error', Lang::t('errors.unauthorized'));
+            redirect('/events/' . $event['id']);
+        }
+
+        Comment::delete($commentId);
+        redirect('/events/' . $event['id'] . '#comments');
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

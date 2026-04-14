@@ -38,6 +38,9 @@ require_once ROOT . '/src/Core/Database.php';
 require_once ROOT . '/src/Core/Session.php';
 require_once ROOT . '/src/Core/Lang.php';
 require_once ROOT . '/src/Core/Router.php';
+require_once ROOT . '/src/Core/Csrf.php';
+require_once ROOT . '/src/Core/RateLimiter.php';
+require_once ROOT . '/src/Core/Queue.php';
 
 // ── Models ────────────────────────────────────────────────────────────────────
 // AppInvite must precede User (User::create checks AppInvite::noUsersExist)
@@ -47,8 +50,12 @@ require_once ROOT . '/src/Models/User.php';
 require_once ROOT . '/src/Models/Group.php';
 require_once ROOT . '/src/Models/Invite.php';
 require_once ROOT . '/src/Models/Event.php';
+require_once ROOT . '/src/Models/PasswordReset.php';
 require_once ROOT . '/src/Models/EventTimeSlot.php';
 require_once ROOT . '/src/Models/Response.php';
+require_once ROOT . '/src/Models/Comment.php';
+require_once ROOT . '/src/Models/SlotVote.php';
+require_once ROOT . '/src/Models/NotificationPreference.php';
 
 // ── Core services (continued) ─────────────────────────────────────────────────
 require_once ROOT . '/src/Core/Mailer.php';
@@ -60,10 +67,25 @@ require_once ROOT . '/src/Controllers/DashboardController.php';
 require_once ROOT . '/src/Controllers/GroupController.php';
 require_once ROOT . '/src/Controllers/EventController.php';
 require_once ROOT . '/src/Controllers/InviteController.php';
+require_once ROOT . '/src/Controllers/ProfileController.php';
 
 // ── Runtime initialisation ────────────────────────────────────────────────────
 Session::start();                        // must happen before any output
-Lang::load(ROOT . '/lang/hu.json');      // load Hungarian translations into memory
+
+// Load language based on user's saved locale preference (defaults to Hungarian)
+$_langUserId = Session::userId();
+$_userLocale = 'hu';
+if ($_langUserId) {
+    $_userRow    = User::findById($_langUserId);
+    $_userLocale = $_userRow['locale'] ?? 'hu';
+}
+$_langFile = ROOT . '/lang/' . $_userLocale . '.json';
+if (!is_file($_langFile)) {
+    $_langFile   = ROOT . '/lang/hu.json';
+    $_userLocale = 'hu';
+}
+Lang::load($_langFile, $_userLocale);
+unset($_langUserId, $_userRow, $_userLocale, $_langFile);
 
 // First-boot: auto-generate setup invite code when no users exist yet
 _maybeGenerateSetupInvite();
@@ -266,6 +288,17 @@ function requireAdmin(): int
         redirect('/');
     }
     return $userId;
+}
+
+/**
+ * Render a hidden CSRF token input field.
+ * Shorthand for <?= Csrf::field() ?> in views.
+ *
+ * @return string  HTML hidden input element.
+ */
+function csrfField(): string
+{
+    return Csrf::field();
 }
 
 /**

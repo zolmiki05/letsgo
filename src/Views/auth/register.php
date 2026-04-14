@@ -11,6 +11,7 @@
         <?php endif; ?>
 
         <form method="POST" action="/register" class="form-stack">
+            <?= csrfField() ?>
             <?php if (!$registrationOpen || !empty($prefillToken)): ?>
             <div class="field">
                 <label for="invite_token"><?= e(Lang::t('auth.invite_code')) ?></label>

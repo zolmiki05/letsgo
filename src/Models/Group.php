@@ -37,26 +37,23 @@ class Group
     /**
      * Return all groups where the user is a member, with a live member count.
      *
-     * Uses a self-join on group_members:
-     *   gm  – filters to groups the user belongs to
-     *   gm2 – counts all members in each of those groups
-     *
-     * Results are ordered by creation date, newest first.
-     *
-     * @return array<int, array{id:int,name:string,owner_id:int,created_at:string,member_count:int}>
+     * @param bool $archivedOnly  When true, return only archived groups; otherwise only active.
+     * @return array<int, array{id:int,name:string,owner_id:int,is_archived:int,created_at:string,member_count:int}>
      */
-    public static function forUser(int $userId): array
+    public static function forUser(int $userId, bool $archivedOnly = false): array
     {
-        $db   = Database::getInstance();
-        $stmt = $db->prepare(
+        $db      = Database::getInstance();
+        $archive = $archivedOnly ? 1 : 0;
+        $stmt    = $db->prepare(
             'SELECT g.*, COUNT(gm2.user_id) AS member_count
              FROM `groups` g
              JOIN group_members gm  ON gm.group_id  = g.id AND gm.user_id = ?
              JOIN group_members gm2 ON gm2.group_id = g.id
+             WHERE g.is_archived = ?
              GROUP BY g.id
              ORDER BY g.created_at DESC'
         );
-        $stmt->execute([$userId]);
+        $stmt->execute([$userId, $archive]);
         return $stmt->fetchAll();
     }
 
@@ -103,6 +100,27 @@ class Group
         $db   = Database::getInstance();
         $stmt = $db->prepare('UPDATE `groups` SET name = ? WHERE id = ?');
         $stmt->execute([$name, $id]);
+    }
+
+    /**
+     * Archive a group (hides it from the active dashboard).
+     * Only the owner should call this (enforced at controller level).
+     */
+    public static function archive(int $id): void
+    {
+        $db   = Database::getInstance();
+        $stmt = $db->prepare('UPDATE `groups` SET is_archived = 1 WHERE id = ?');
+        $stmt->execute([$id]);
+    }
+
+    /**
+     * Unarchive a group (moves it back to the active dashboard).
+     */
+    public static function unarchive(int $id): void
+    {
+        $db   = Database::getInstance();
+        $stmt = $db->prepare('UPDATE `groups` SET is_archived = 0 WHERE id = ?');
+        $stmt->execute([$id]);
     }
 
     /**
@@ -156,15 +174,15 @@ class Group
 
     /**
      * Return all members of a group, ordered by join date (oldest first).
-     * Includes the member's email and join timestamp for display in the sidebar.
+     * Includes email, username, and join timestamp for display in the sidebar.
      *
-     * @return array<int, array{id:int,email:string,joined_at:string}>
+     * @return array<int, array{id:int,email:string,username:?string,joined_at:string}>
      */
     public static function members(int $groupId): array
     {
         $db   = Database::getInstance();
         $stmt = $db->prepare(
-            'SELECT u.id, u.email, gm.joined_at
+            'SELECT u.id, u.email, u.username, gm.joined_at
              FROM group_members gm
              JOIN users u ON u.id = gm.user_id
              WHERE gm.group_id = ?

@@ -19,7 +19,10 @@
  */
 class Database
 {
-    /** Shared PDO instance; null until first call to getInstance(). */
+    /**
+     * Shared PDO instance; null until first call to getInstance().
+     * Use reset() in tests to force a fresh connection.
+     */
     private static ?PDO $instance = null;
 
     /**
@@ -43,9 +46,21 @@ class Database
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,   // throw on error
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,         // arrays, not objects
                 PDO::ATTR_EMULATE_PREPARES   => false,                    // native prepared stmts
+                PDO::ATTR_PERSISTENT         => true,                     // connection pooling via pconnect
             ]);
         }
 
         return self::$instance;
+    }
+
+    /**
+     * Discard the cached connection, forcing a fresh one on the next getInstance() call.
+     *
+     * Intended for use in tests that need an isolated connection.
+     * Not needed during normal request handling.
+     */
+    public static function reset(): void
+    {
+        self::$instance = null;
     }
 }

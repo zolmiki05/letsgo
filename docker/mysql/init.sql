@@ -96,6 +96,16 @@ INSERT INTO settings (`key`, value) VALUES
     ('registration_open',      '0'),
     ('users_can_create_groups','1');
 
+-- Password reset tokens -----------------------------------------------------
+CREATE TABLE password_resets (
+    id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT UNSIGNED NOT NULL,
+    token      VARCHAR(64)  NOT NULL UNIQUE,
+    expires_at DATETIME     NOT NULL,
+    created_at DATETIME     NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Event time slots (multiple proposed dates per event) ----------------------
 CREATE TABLE event_time_slots (
     id          INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,

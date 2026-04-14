@@ -43,15 +43,18 @@
                     <?php if ((int)$u['id'] !== $currentUserId): ?>
                         <?php if ((int)$u['is_banned']): ?>
                         <form method="POST" action="/admin/users/<?= (int)$u['id'] ?>/unban" class="inline-form">
+                            <?= csrfField() ?>
                             <button type="submit" class="btn btn-sm btn-ghost"><?= e(Lang::t('admin.unban_button')) ?></button>
                         </form>
                         <?php else: ?>
                         <form method="POST" action="/admin/users/<?= (int)$u['id'] ?>/ban" class="inline-form">
+                            <?= csrfField() ?>
                             <button type="submit" class="btn btn-sm btn-warning"><?= e(Lang::t('admin.ban_button')) ?></button>
                         </form>
                         <?php endif; ?>
                         <form method="POST" action="/admin/users/<?= (int)$u['id'] ?>/delete" class="inline-form"
                               onsubmit="return confirm('<?= e(Lang::t('admin.delete_user_confirm')) ?>')">
+                            <?= csrfField() ?>
                             <button type="submit" class="btn btn-sm btn-danger"><?= e(Lang::t('admin.delete_button')) ?></button>
                         </form>
                     <?php else: ?>
