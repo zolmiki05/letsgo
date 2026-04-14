@@ -40,7 +40,18 @@ $_currentPath = strtok($_SERVER['REQUEST_URI'], '?');
             <a href="/profile/password" class="nav-username btn-ghost <?= str_starts_with($_currentPath, '/profile') ? 'active' : '' ?>">
                 <?= e($_navUser['username'] ?? $_navUser['email']) ?>
             </a>
+            <a href="/profile/notifications" class="btn-ghost" title="<?= e(Lang::t('nav.notifications')) ?>">🔔</a>
+            <!-- Locale switcher -->
+            <?php $_currentLocale = Lang::currentLocale(); ?>
+            <form method="POST" action="/profile/locale" class="inline-form">
+                <?= csrfField() ?>
+                <input type="hidden" name="locale" value="<?= $_currentLocale === 'hu' ? 'en' : 'hu' ?>">
+                <button type="submit" class="btn-ghost" title="<?= e(Lang::t('nav.switch_language')) ?>">
+                    <?= $_currentLocale === 'hu' ? 'EN' : 'HU' ?>
+                </button>
+            </form>
             <form method="POST" action="/logout" class="inline-form">
+                <?= csrfField() ?>
                 <button type="submit" class="btn-ghost"><?= e(Lang::t('nav.logout')) ?></button>
             </form>
         </nav>

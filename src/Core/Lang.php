@@ -25,6 +25,9 @@ class Lang
     /** Loaded translation strings, nested array matching the JSON structure. */
     private static array $strings = [];
 
+    /** Currently active locale code (e.g. 'hu', 'en'). */
+    private static string $locale = 'hu';
+
     /**
      * Load a language JSON file into memory.
      *
@@ -33,10 +36,39 @@ class Lang
      *
      * @param string $filePath  Absolute path to the JSON language file.
      */
-    public static function load(string $filePath): void
+    /**
+     * Load a language JSON file and record the active locale.
+     *
+     * @param string $filePath  Absolute path to the JSON language file.
+     * @param string $locale    Locale code to record (default 'hu').
+     */
+    public static function load(string $filePath, string $locale = 'hu'): void
     {
         $json = file_get_contents($filePath);
         self::$strings = json_decode($json, true) ?? [];
+        self::$locale  = $locale;
+    }
+
+    /**
+     * Switch to a different locale if the corresponding file exists.
+     * Falls back silently to the current locale if the file is missing.
+     *
+     * @param string $locale    ISO 639-1 code, e.g. 'en' or 'hu'.
+     * @param string $langDir   Directory that contains the .json files (default ROOT/lang).
+     */
+    public static function setCurrentLocale(string $locale, string $langDir = ''): void
+    {
+        $dir  = $langDir ?: (defined('ROOT') ? ROOT . '/lang' : '');
+        $file = $dir . '/' . $locale . '.json';
+        if ($dir && is_file($file)) {
+            self::load($file, $locale);
+        }
+    }
+
+    /** Return the currently loaded locale code. */
+    public static function currentLocale(): string
+    {
+        return self::$locale;
     }
 
     /**

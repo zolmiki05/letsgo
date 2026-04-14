@@ -70,8 +70,12 @@ class AuthController
             redirect('/login');
         }
 
+        // Rate-limit: 10 failed attempts per 5 min per IP aborts with 429
+        RateLimiter::check('login');
+
         $user = User::verify($identifier, $password);
         if (!$user) {
+            RateLimiter::hit('login');
             // Provide a specific message for banned accounts (better UX than generic error)
             $found = User::findByIdentifier($identifier);
             if ($found && (int)($found['is_banned'] ?? 0) === 1) {
@@ -227,6 +231,10 @@ class AuthController
     public function forgot(array $params): void
     {
         if (Session::userId()) redirect('/');
+
+        // Rate-limit: 5 attempts per 10 min per IP
+        RateLimiter::check('forgot');
+        RateLimiter::hit('forgot');
 
         $email = trim($_POST['email'] ?? '');
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {

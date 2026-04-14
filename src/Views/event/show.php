@@ -99,6 +99,7 @@
         <div class="card">
             <h2 class="card-title"><?= e(Lang::t('event.update_status')) ?></h2>
             <form method="POST" action="/events/<?= (int)$event['id'] ?>/status" class="status-form">
+                <?= csrfField() ?>
                 <div class="status-options">
                     <?php foreach (['IDEA','DISCUSSING','FINAL','CANCELLED'] as $s): ?>
                     <label class="status-option status-option-<?= strtolower($s) ?> <?= $event['status'] === $s ? 'selected' : '' ?>">
@@ -117,8 +118,50 @@
         <div class="card card-danger">
             <form method="POST" action="/events/<?= (int)$event['id'] ?>/delete"
                   onsubmit="return confirm('<?= e(Lang::t('event.delete_confirm')) ?>')">
+                <?= csrfField() ?>
                 <button type="submit" class="btn btn-danger btn-full"><?= e(Lang::t('event.delete_button')) ?></button>
             </form>
+        </div>
+        <?php endif; ?>
+
+        <!-- Slot voting (only if there are multiple slots) -->
+        <?php if (count($slots) > 1): ?>
+        <div class="card" id="slot-votes">
+            <h2 class="card-title"><?= e(Lang::t('event.slot_vote_title')) ?></h2>
+            <p class="text-muted" style="margin-bottom:.75rem;font-size:.875rem"><?= e(Lang::t('event.slot_vote_hint')) ?></p>
+            <div class="slot-vote-grid">
+                <?php foreach ($slots as $sl): ?>
+                <?php
+                $slotId    = (int)$sl['id'];
+                $myVote    = $mySlotVotes[$slotId] ?? null;
+                $totals    = null;
+                foreach ($slotTotals as $t) { if ((int)$t['slot_id'] === $slotId) { $totals = $t; break; } }
+                ?>
+                <div class="slot-vote-row">
+                    <span class="slot-vote-label">
+                        <?= $sl['slot_date'] ? e(fmtDate($sl['slot_date'])) : e($sl['slot_text']) ?>
+                    </span>
+                    <div class="slot-vote-actions">
+                        <form method="POST" action="/events/<?= (int)$event['id'] ?>/vote-slot" class="inline-form">
+                            <?= csrfField() ?>
+                            <input type="hidden" name="slot_id" value="<?= $slotId ?>">
+                            <input type="hidden" name="available" value="1">
+                            <button type="submit" class="btn btn-sm <?= $myVote === 1 ? 'btn-success' : 'btn-outline' ?>">
+                                ✓ <?= $totals ? (int)$totals['yes'] : 0 ?>
+                            </button>
+                        </form>
+                        <form method="POST" action="/events/<?= (int)$event['id'] ?>/vote-slot" class="inline-form">
+                            <?= csrfField() ?>
+                            <input type="hidden" name="slot_id" value="<?= $slotId ?>">
+                            <input type="hidden" name="available" value="0">
+                            <button type="submit" class="btn btn-sm <?= $myVote === 0 ? 'btn-danger' : 'btn-outline' ?>">
+                                ✗ <?= $totals ? (int)$totals['no'] : 0 ?>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
         </div>
         <?php endif; ?>
 
@@ -128,6 +171,7 @@
                 <?= $myResp ? e(Lang::t('event.feedback_modify')) : e(Lang::t('event.feedback_your')) ?>
             </h2>
             <form method="POST" action="/events/<?= (int)$event['id'] ?>/feedback" class="form-stack">
+                <?= csrfField() ?>
 
                 <div class="slider-group">
                     <label for="interest_level"><?= e(Lang::t('event.feedback_interest')) ?></label>
@@ -166,6 +210,48 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary"><?= e(Lang::t('event.feedback_save')) ?></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Comments section -->
+    <div class="event-comments" id="comments">
+        <div class="card">
+            <h2 class="card-title"><?= e(Lang::t('event.comments_title')) ?></h2>
+
+            <?php if (!empty($comments)): ?>
+            <ul class="comment-list">
+                <?php foreach ($comments as $c): ?>
+                <li class="comment-item">
+                    <div class="comment-header">
+                        <span class="comment-author"><?= e($c['author']) ?></span>
+                        <span class="comment-date text-muted"><?= e(fmtDate($c['created_at'])) ?></span>
+                        <?php if ((int)$c['user_id'] === Session::userId() || User::isAdmin(Session::userId())): ?>
+                        <form method="POST"
+                              action="/events/<?= (int)$event['id'] ?>/comments/<?= (int)$c['id'] ?>/delete"
+                              class="inline-form"
+                              onsubmit="return confirm('<?= e(Lang::t('event.comment_delete_confirm')) ?>')">
+                            <?= csrfField() ?>
+                            <button type="submit" class="btn btn-ghost btn-xs"><?= e(Lang::t('event.comment_delete')) ?></button>
+                        </form>
+                        <?php endif; ?>
+                    </div>
+                    <p class="comment-body"><?= nl2br(e($c['body'])) ?></p>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php else: ?>
+            <p class="text-muted" style="margin-bottom:1rem"><?= e(Lang::t('event.no_comments')) ?></p>
+            <?php endif; ?>
+
+            <form method="POST" action="/events/<?= (int)$event['id'] ?>/comments" class="form-stack" style="margin-top:1rem">
+                <?= csrfField() ?>
+                <div class="field">
+                    <textarea name="body" rows="3" maxlength="2000"
+                              placeholder="<?= e(Lang::t('event.comment_placeholder')) ?>"
+                              class="form-textarea" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm"><?= e(Lang::t('event.comment_submit')) ?></button>
             </form>
         </div>
     </div>

@@ -16,6 +16,7 @@
 
         <?php if (!$success): ?>
         <form method="POST" action="/forgot-password" class="form-stack">
+            <?= csrfField() ?>
             <div class="field">
                 <label for="email"><?= e(Lang::t('auth.email')) ?></label>
                 <input type="email" id="email" name="email" required autofocus

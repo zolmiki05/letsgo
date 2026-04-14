@@ -40,10 +40,15 @@ class Mailer
         $eventUrl = appBaseUrl() . '/events/' . $event['id'];
         foreach ($members as $m) {
             if ((int)$m['id'] === $actorId) continue;
-            self::send($m['email'], $subject, self::renderEmail('event_created', [
-                'event' => $event, 'group' => $group, 'creator' => $creator,
-                'slots' => $slots,  'eventUrl' => $eventUrl,
-            ]));
+            if (NotificationPreference::isDisabled((int)$m['id'], 'event_created')) continue;
+            Queue::dispatch('send_email', [
+                'to'      => $m['email'],
+                'subject' => $subject,
+                'html'    => self::renderEmail('event_created', [
+                    'event' => $event, 'group' => $group, 'creator' => $creator,
+                    'slots' => $slots,  'eventUrl' => $eventUrl,
+                ]),
+            ]);
         }
     }
 
@@ -54,10 +59,15 @@ class Mailer
         $eventUrl = appBaseUrl() . '/events/' . $event['id'];
         foreach ($members as $m) {
             if ((int)$m['id'] === $actorId) continue;
-            self::send($m['email'], $subject, self::renderEmail('event_updated', [
-                'event' => $event, 'group' => $group, 'creator' => $creator,
-                'slots' => $slots,  'eventUrl' => $eventUrl, 'actor' => $actor,
-            ]));
+            if (NotificationPreference::isDisabled((int)$m['id'], 'event_updated')) continue;
+            Queue::dispatch('send_email', [
+                'to'      => $m['email'],
+                'subject' => $subject,
+                'html'    => self::renderEmail('event_updated', [
+                    'event' => $event, 'group' => $group, 'creator' => $creator,
+                    'slots' => $slots,  'eventUrl' => $eventUrl, 'actor' => $actor,
+                ]),
+            ]);
         }
     }
 
@@ -65,15 +75,20 @@ class Mailer
     public static function sendFeedbackReceived(
         array $event, array $creator, array $actor, array $response
     ): void {
-        if ((int)$creator['id'] === (int)$actor['id']) return; // no self-notify
+        if ((int)$creator['id'] === (int)$actor['id']) return;
+        if (NotificationPreference::isDisabled((int)$creator['id'], 'feedback')) return;
         $subject  = Lang::t('email.feedback_received_subject', ['title' => $event['title']]);
         $eventUrl = appBaseUrl() . '/events/' . $event['id'];
-        self::send($creator['email'], $subject, self::renderEmail('feedback_received', [
-            'event'    => $event,
-            'actor'    => $actor,
-            'response' => $response,
-            'eventUrl' => $eventUrl,
-        ]));
+        Queue::dispatch('send_email', [
+            'to'      => $creator['email'],
+            'subject' => $subject,
+            'html'    => self::renderEmail('feedback_received', [
+                'event'    => $event,
+                'actor'    => $actor,
+                'response' => $response,
+                'eventUrl' => $eventUrl,
+            ]),
+        ]);
     }
 
     /** Notify all group members (except actor) when event status changes. */
@@ -85,14 +100,19 @@ class Mailer
         $slots    = EventTimeSlot::forEvent((int)$event['id']);
         foreach ($members as $m) {
             if ((int)$m['id'] === $actorId) continue;
-            self::send($m['email'], $subject, self::renderEmail('status_changed', [
-                'event'     => $event,
-                'group'     => $group,
-                'actor'     => $actor,
-                'slots'     => $slots,
-                'oldStatus' => $oldStatus,
-                'eventUrl'  => $eventUrl,
-            ]));
+            if (NotificationPreference::isDisabled((int)$m['id'], 'status_changed')) continue;
+            Queue::dispatch('send_email', [
+                'to'      => $m['email'],
+                'subject' => $subject,
+                'html'    => self::renderEmail('status_changed', [
+                    'event'     => $event,
+                    'group'     => $group,
+                    'actor'     => $actor,
+                    'slots'     => $slots,
+                    'oldStatus' => $oldStatus,
+                    'eventUrl'  => $eventUrl,
+                ]),
+            ]);
         }
     }
 
@@ -106,11 +126,16 @@ class Mailer
         $groupUrl = appBaseUrl() . '/groups/' . $group['id'];
         foreach ($existingMembers as $m) {
             if ((int)$m['id'] === (int)$newMember['id']) continue;
-            self::send($m['email'], $subject, self::renderEmail('member_joined', [
-                'group'     => $group,
-                'newMember' => $newMember,
-                'groupUrl'  => $groupUrl,
-            ]));
+            if (NotificationPreference::isDisabled((int)$m['id'], 'member_joined')) continue;
+            Queue::dispatch('send_email', [
+                'to'      => $m['email'],
+                'subject' => $subject,
+                'html'    => self::renderEmail('member_joined', [
+                    'group'     => $group,
+                    'newMember' => $newMember,
+                    'groupUrl'  => $groupUrl,
+                ]),
+            ]);
         }
     }
 
@@ -121,9 +146,37 @@ class Mailer
         $groupUrl = appBaseUrl() . '/groups/' . $group['id'];
         foreach ($members as $m) {
             if ((int)$m['id'] === $actorId) continue;
-            self::send($m['email'], $subject, self::renderEmail('event_deleted', [
-                'event' => $event, 'group' => $group, 'groupUrl' => $groupUrl,
-            ]));
+            if (NotificationPreference::isDisabled((int)$m['id'], 'event_deleted')) continue;
+            Queue::dispatch('send_email', [
+                'to'      => $m['email'],
+                'subject' => $subject,
+                'html'    => self::renderEmail('event_deleted', [
+                    'event' => $event, 'group' => $group, 'groupUrl' => $groupUrl,
+                ]),
+            ]);
+        }
+    }
+
+    /** Notify members when a comment is added to an event. */
+    public static function sendEventComment(
+        array $event, array $group, array $members, array $author, int $actorId, string $commentBody
+    ): void {
+        $subject  = Lang::t('email.comment_subject', ['title' => $event['title']]);
+        $eventUrl = appBaseUrl() . '/events/' . $event['id'];
+        foreach ($members as $m) {
+            if ((int)$m['id'] === $actorId) continue;
+            if (NotificationPreference::isDisabled((int)$m['id'], 'comment')) continue;
+            Queue::dispatch('send_email', [
+                'to'      => $m['email'],
+                'subject' => $subject,
+                'html'    => self::renderEmail('event_comment', [
+                    'event'       => $event,
+                    'group'       => $group,
+                    'author'      => $author,
+                    'commentBody' => $commentBody,
+                    'eventUrl'    => $eventUrl,
+                ]),
+            ]);
         }
     }
 
@@ -145,7 +198,7 @@ class Mailer
         }
     }
 
-    private static function renderEmail(string $name, array $vars): string
+    public static function renderEmail(string $name, array $vars): string
     {
         $content = self::tpl($name, $vars);
         return self::tpl('layout', ['content' => $content] + $vars);

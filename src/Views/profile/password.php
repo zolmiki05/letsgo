@@ -12,6 +12,7 @@
 
 <div class="card" style="max-width:480px">
     <form method="POST" action="/profile/password" class="form-stack">
+        <?= csrfField() ?>
         <div class="field">
             <label for="current_password"><?= e(Lang::t('profile.current_password')) ?></label>
             <input type="password" id="current_password" name="current_password" required autocomplete="current-password">

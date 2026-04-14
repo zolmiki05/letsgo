@@ -1,0 +1,29 @@
+{
+    "name": "letsgo/letsgo",
+    "description": "Letsgo – group activity planning app",
+    "type": "project",
+    "require": {
+        "php": ">=8.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "classmap": [
+            "src/Core",
+            "src/Models",
+            "src/Controllers"
+        ]
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}

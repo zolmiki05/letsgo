@@ -9,6 +9,7 @@
 
 <div class="card">
     <form method="POST" action="/groups/create" class="form-stack">
+        <?= csrfField() ?>
         <div class="field">
             <label for="name"><?= e(Lang::t('group.name_label')) ?></label>
             <input type="text" id="name" name="name" required autofocus maxlength="255">

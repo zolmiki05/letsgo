@@ -5,6 +5,39 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.3.0] – 2026-04-14
+
+### Added
+- **Slot voting** — group members can vote available/unavailable on each proposed time slot; aggregate counts shown on the event detail page.
+- **Comment threads** — members can post comments on events; comment authors and admins can delete their own comments; new comments dispatch email notifications via the queue.
+- **Notification preferences** — per-user opt-out settings (`/profile/notifications`); seven notification types individually switchable; opt-out model (row present = disabled).
+- **Group archiving** — group owners can archive/unarchive groups; archived groups are hidden from the main dashboard but accessible directly; shown in a separate "Archived" section on the dashboard.
+- **Queue-based email sending** — all group notification emails now dispatch via `Queue::dispatch('send_email', …)` instead of synchronous SMTP; reduces request latency and allows retries. Transactional emails (password reset, invite, password changed) remain synchronous.
+- **Rate limiting** — `RateLimiter` class (DB-backed sliding window); login endpoint: 10 attempts/5 min; forgot-password: 5 attempts/10 min.
+- **CSRF protection** — `Csrf` class generates a per-session token; `Router::dispatch()` calls `Csrf::verify()` for every POST; all views updated with `<?= csrfField() ?>`.
+- **English locale** — full `lang/en.json` translation; users can switch language via the nav bar toggle; preference persisted to `users.locale`.
+- **PHPUnit test suite** — `composer.json` + `phpunit.xml`; unit tests for `Csrf`, `Router`, `Database`; integration tests for `Queue`; test bootstrap at `tests/bootstrap.php`.
+- **`bin/worker.php`** — CLI queue worker; processes `send_email` jobs; exponential back-off retries; probabilistic job pruning; intended for cron (`* * * * *`).
+- **DB connection pooling** — `PDO::ATTR_PERSISTENT` enabled; `Database::reset()` for test isolation.
+
+### Changed
+- `Group::forUser()` — accepts `$archivedOnly` flag; filters by `is_archived` column.
+- `Group::members()` — now returns `username` alongside `id` and `email`.
+- `User::findById()` — now includes `locale` column in the result set.
+- `Mailer::renderEmail()` — made public (used by worker).
+- Bootstrap locale loading — language file chosen based on logged-in user's `locale` preference; falls back to Hungarian.
+
+### Database
+- New `users.locale` column (VARCHAR 10, default `'hu'`).
+- New `groups.is_archived` column (TINYINT, default `0`).
+- New `rate_limits` table with UNIQUE `key_hash` index.
+- New `jobs` table with `pending_run_at` composite index.
+- New `comments` table (FK to `events`, `users`).
+- New `slot_votes` table with UNIQUE `(slot_id, user_id)`.
+- New `notification_preferences` table with UNIQUE `(user_id, type)`.
+
+---
+
 ## [1.2.0] – 2026-04-14
 
 ### Added

@@ -21,6 +21,7 @@
         <?php endif; ?>
 
         <form method="POST" action="/login" class="form-stack">
+            <?= csrfField() ?>
             <div class="field">
                 <label for="identifier"><?= e(Lang::t('auth.identifier')) ?></label>
                 <input type="text" id="identifier" name="identifier" required autocomplete="username" autofocus

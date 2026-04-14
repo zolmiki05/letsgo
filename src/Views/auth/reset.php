@@ -10,6 +10,7 @@
         <?php endif; ?>
 
         <form method="POST" action="/reset-password" class="form-stack">
+            <?= csrfField() ?>
             <input type="hidden" name="token" value="<?= e($token) ?>">
 
             <div class="field">

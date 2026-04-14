@@ -31,7 +31,7 @@ class User
     {
         $db   = Database::getInstance();
         $stmt = $db->prepare(
-            'SELECT id, email, username, is_admin, is_banned FROM users WHERE id = ? LIMIT 1'
+            'SELECT id, email, username, is_admin, is_banned, locale FROM users WHERE id = ? LIMIT 1'
         );
         $stmt->execute([$id]);
         return $stmt->fetch() ?: null;
@@ -221,6 +221,29 @@ class User
             'SELECT id, email, username, is_admin, is_banned, created_at FROM users ORDER BY id ASC'
         );
         return $stmt->fetchAll();
+    }
+
+    // ── Locale ────────────────────────────────────────────────────────────────
+
+    /**
+     * Return a user's preferred locale (defaults to 'hu' if column is missing).
+     */
+    public static function getLocale(int $id): string
+    {
+        $user = self::findById($id);
+        return $user['locale'] ?? 'hu';
+    }
+
+    /**
+     * Persist a new locale preference for the given user.
+     *
+     * @param string $locale  ISO 639-1 code, e.g. 'hu' or 'en'.
+     */
+    public static function setLocale(int $id, string $locale): void
+    {
+        $db   = Database::getInstance();
+        $stmt = $db->prepare('UPDATE users SET locale = ? WHERE id = ?');
+        $stmt->execute([$locale, $id]);
     }
 
     // ── Uniqueness checks ─────────────────────────────────────────────────────

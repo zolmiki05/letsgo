@@ -9,6 +9,7 @@
 
 <div class="card">
     <form method="POST" action="/groups/<?= (int)$group['id'] ?>/events/create" class="form-stack">
+        <?= csrfField() ?>
 
         <div class="field">
             <label for="title"><?= e(Lang::t('event.field_title')) ?></label>

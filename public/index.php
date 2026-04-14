@@ -14,8 +14,11 @@ $router->post('/login',    'AuthController@login');
 $router->get('/register',  'AuthController@registerForm');
 $router->post('/register', 'AuthController@register');
 $router->post('/logout',          'AuthController@logout');
-$router->get('/profile/password',  'AuthController@passwordForm');
-$router->post('/profile/password', 'AuthController@changePassword');
+$router->get('/profile/password',       'AuthController@passwordForm');
+$router->post('/profile/password',      'AuthController@changePassword');
+$router->get('/profile/notifications',  'ProfileController@notificationsForm');
+$router->post('/profile/notifications', 'ProfileController@saveNotifications');
+$router->post('/profile/locale',        'ProfileController@setLocale');
 $router->get('/forgot-password',   'AuthController@forgotForm');
 $router->post('/forgot-password',  'AuthController@forgot');
 $router->get('/reset-password',    'AuthController@resetForm');
@@ -38,9 +41,11 @@ $router->post('/admin/users/{id}/delete', 'AdminController@deleteUser');
 $router->get('/groups/create',           'GroupController@createForm');
 $router->post('/groups/create',          'GroupController@create');
 $router->get('/groups/{id}',             'GroupController@show');
-$router->post('/groups/{id}/rename',     'GroupController@rename');
-$router->post('/groups/{id}/delete',     'GroupController@delete');
-$router->post('/groups/{id}/invite',     'GroupController@generateInvite');
+$router->post('/groups/{id}/rename',    'GroupController@rename');
+$router->post('/groups/{id}/delete',    'GroupController@delete');
+$router->post('/groups/{id}/invite',    'GroupController@generateInvite');
+$router->post('/groups/{id}/archive',   'GroupController@archive');
+$router->post('/groups/{id}/unarchive', 'GroupController@unarchive');
 
 // --- Events ---
 $router->get('/groups/{id}/events/create',  'EventController@createForm');
@@ -50,7 +55,10 @@ $router->get('/events/{id}/edit',           'EventController@editForm');
 $router->post('/events/{id}/edit',          'EventController@edit');
 $router->post('/events/{id}/delete',        'EventController@delete');
 $router->post('/events/{id}/status',        'EventController@updateStatus');
-$router->post('/events/{id}/feedback',      'EventController@saveFeedback');
+$router->post('/events/{id}/feedback',         'EventController@saveFeedback');
+$router->post('/events/{id}/vote-slot',        'EventController@voteSlot');
+$router->post('/events/{id}/comments',         'EventController@addComment');
+$router->post('/events/{id}/comments/{cid}/delete', 'EventController@deleteComment');
 
 // --- Invite join ---
 $router->get('/join',  'InviteController@join');
