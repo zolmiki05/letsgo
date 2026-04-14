@@ -3,6 +3,8 @@ stages:
 
 test:phpunit:
   stage: test
+  tags:
+    - build
   image: php:8.2-cli
   services:
     - name: mysql:8.0
