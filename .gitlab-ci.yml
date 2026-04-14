@@ -10,6 +10,7 @@ test:phpunit:
     - name: mysql:8.0
       alias: db
   variables:
+    GIT_DEPTH: 0
     MYSQL_DATABASE: letsgo_test
     MYSQL_USER: letsgo
     MYSQL_PASSWORD: letsgo_test_secret
