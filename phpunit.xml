@@ -4,6 +4,9 @@
          bootstrap="tests/bootstrap.php"
          colors="true"
          testdox="true">
+    <logging>
+        <junit outputFile="storage/phpunit-report.xml"/>
+    </logging>
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>

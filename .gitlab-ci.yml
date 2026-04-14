@@ -1,0 +1,50 @@
+stages:
+  - test
+
+test:phpunit:
+  stage: test
+  image: php:8.2-cli
+  services:
+    - name: mysql:8.0
+      alias: db
+  variables:
+    MYSQL_DATABASE: letsgo_test
+    MYSQL_USER: letsgo
+    MYSQL_PASSWORD: letsgo_test_secret
+    MYSQL_ROOT_PASSWORD: root_test_secret
+    DB_HOST: db
+    DB_NAME: letsgo_test
+    DB_USER: letsgo
+    DB_PASS: letsgo_test_secret
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq unzip git
+    - docker-php-ext-install pdo pdo_mysql
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - composer install --no-interaction --prefer-dist
+    - |
+      # Wait for MySQL to be ready
+      for i in $(seq 1 30); do
+        php -r "new PDO('mysql:host=db;dbname=letsgo_test', 'letsgo', 'letsgo_test_secret');" 2>/dev/null && break
+        echo "Waiting for DB... ($i)"
+        sleep 2
+      done
+    - |
+      php -r "
+        \$pdo = new PDO('mysql:host=db;dbname=letsgo_test;charset=utf8mb4', 'letsgo', 'letsgo_test_secret');
+        \$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        // Strip the CREATE DATABASE / USE lines – the DB already exists
+        \$sql = file_get_contents('docker/mysql/init.sql');
+        \$sql = preg_replace('/^CREATE DATABASE.*?;\s*/ims', '', \$sql);
+        \$sql = preg_replace('/^USE\s+\S+\s*;\s*/ims', '', \$sql);
+        foreach (array_filter(array_map('trim', explode(';', \$sql))) as \$stmt) {
+            \$pdo->exec(\$stmt);
+        }
+        echo 'Schema applied.' . PHP_EOL;
+      "
+  script:
+    - vendor/bin/phpunit --testdox
+  artifacts:
+    when: always
+    reports:
+      junit: storage/phpunit-report.xml
+    expire_in: 7 days
