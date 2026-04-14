@@ -44,6 +44,7 @@ test:phpunit:
         }
         // Apply upgrade.sql – additive migrations (new tables and columns)
         \$sql = file_get_contents('docker/mysql/upgrade.sql');
+        \$sql = preg_replace('/^USE\s+\S+\s*;\s*/ims', '', \$sql);
         foreach (array_filter(array_map('trim', explode(';', \$sql))) as \$stmt) {
             \$pdo->exec(\$stmt);
         }
