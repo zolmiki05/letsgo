@@ -23,5 +23,5 @@ Letsgo is a group activity planner. It lets any community — friends, colleague
 
 - **Stack:** PHP 8.2, MySQL 8.x, Apache — no framework, runs in Docker
 - **Auth:** Session-based, invite-code-gated registration (or open registration)
-- **Version:** 1.0.0
+- **Version:** 1.2.0
 - **UI Language:** Hungarian (`lang/hu.json`)

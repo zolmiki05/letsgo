@@ -5,6 +5,32 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.2.0] – 2026-04-14
+
+### Added
+- **Password reset flow** — users can request a reset link via email (`/password/reset`); time-limited token stored in `password_resets` table; new password submitted via `/password/reset/{token}`.
+- **`setup.sh`** — interactive first-time setup script: copies `.env.example` → `.env` and auto-generates random DB name, DB user, DB password, and root password using `openssl rand`.
+- **`upgrade.sh`** — full upgrade runner: stops the stack, creates a timestamped database backup, applies `docker/mysql/upgrade.sql`, and restarts the stack. Replaces the simpler `migrate.sh` workflow.
+- **`backups/`** — git-tracked directory (contents excluded) for database backups created by `upgrade.sh`.
+
+### Fixed
+- **SMTP EPIPE / write error** — strip port suffix from the EHLO hostname; add explicit write-error handling in the SMTP socket layer to prevent broken-pipe crashes on some mail servers.
+
+### Changed
+- **Email templates reskinned** — all `src/Views/email/` templates updated to match the "Signal" design system: accent `#3451D1`, `DM Sans` + `Bricolage Grotesque` fonts (via Google Fonts), correct light-mode surface/border/text tokens, status badge colours matching `app.css`, solid CTA buttons replacing the Tailwind-indigo gradients.
+- **Mailer logging** — `send()` and raw SMTP commands are now logged to the PHP error log for delivery diagnosis; helps troubleshoot mail delivery without enabling full debug output in production.
+
+---
+
+## [1.1.0] – 2026-04-07
+
+### Added
+- **Multiple time slots per event** — an event can now carry any number of proposed date/time options, each stored as a row in the new `event_time_slots` table.
+  - Existing `event_date` / `date_text` values are migrated into the new table on first schema upgrade (idempotent).
+- **HTML email notifications** — outgoing emails are sent with both a plain-text and an HTML part; HTML template uses inline styles for broad mail-client compatibility.
+
+---
+
 ## [1.0.3] – 2026-04-07
 
 ### Added

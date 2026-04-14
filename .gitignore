@@ -5,6 +5,10 @@ docker/mysql/data/
 storage/*
 !storage/.gitkeep
 
+# Database backups created by upgrade.sh
+backups/*
+!backups/.gitkeep
+
 # Environment – never commit real credentials
 .env
 

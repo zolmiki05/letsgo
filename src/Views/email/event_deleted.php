@@ -1,14 +1,15 @@
+<!-- Danger banner -->
 <table cellpadding="0" cellspacing="0" border="0" width="100%"
-       style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;margin:0 0 20px">
+       style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:12px;margin:0 0 20px">
   <tr>
-    <td style="padding:18px 22px">
-      <div style="font-size:.78rem;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">
+    <td style="padding:20px 22px">
+      <div style="font-size:.78rem;font-weight:600;color:#9F1239;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">
         <?= e($group['name']) ?> · <?= e(Lang::t('email.event_deleted_title')) ?>
       </div>
-      <div style="font-size:1.05rem;font-weight:700;color:#7f1d1d;margin-bottom:4px">
+      <div style="font-size:1rem;font-weight:800;color:#7F1D1D;margin-bottom:4px;letter-spacing:-.02em;font-family:'Bricolage Grotesque','DM Sans',Helvetica,Arial,sans-serif">
         <?= e($event['title']) ?>
       </div>
-      <div style="font-size:.88rem;color:#b91c1c;line-height:1.5">
+      <div style="font-size:.875rem;color:#BE123C;line-height:1.6">
         <?= e(Lang::t('email.event_deleted_body', [
             'title' => $event['title'],
             'group' => $group['name'],
@@ -20,39 +21,40 @@
 
 <?php if (!empty($event['description']) || !empty($event['location'])): ?>
 <table width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="background:#f8f8fc;border:1px solid #e8e8f0;border-radius:8px;overflow:hidden;margin:0 0 20px">
+       style="background:#F2F5FC;border:1px solid #C8D3EC;border-radius:12px;overflow:hidden;margin:0 0 20px">
   <?php if (!empty($event['location'])): ?>
   <tr>
-    <td style="padding:8px 14px;border-bottom:1px solid #f0f0f5;width:38%">
-      <span style="font-size:.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em">
+    <td style="padding:9px 14px;border-bottom:1px solid #DAE3F5;width:38%">
+      <span style="font-size:.72rem;font-weight:600;color:#8A9DC4;text-transform:uppercase;letter-spacing:.06em">
         <?= e(Lang::t('event.field_location')) ?>
       </span>
     </td>
-    <td style="padding:8px 14px;border-bottom:1px solid #f0f0f5">
-      <span style="font-size:.88rem;color:#222"><?= e($event['location']) ?></span>
+    <td style="padding:9px 14px;border-bottom:1px solid #DAE3F5">
+      <span style="font-size:.875rem;color:#0B1120"><?= e($event['location']) ?></span>
     </td>
   </tr>
   <?php endif; ?>
   <?php if (!empty($event['description'])): ?>
   <tr>
-    <td style="padding:8px 14px;width:38%;vertical-align:top">
-      <span style="font-size:.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em">
+    <td style="padding:9px 14px;width:38%;vertical-align:top">
+      <span style="font-size:.72rem;font-weight:600;color:#8A9DC4;text-transform:uppercase;letter-spacing:.06em">
         <?= e(Lang::t('event.field_description')) ?>
       </span>
     </td>
-    <td style="padding:8px 14px;vertical-align:top">
-      <span style="font-size:.88rem;color:#222;line-height:1.5"><?= nl2br(e($event['description'])) ?></span>
+    <td style="padding:9px 14px;vertical-align:top">
+      <span style="font-size:.875rem;color:#0B1120;line-height:1.5"><?= nl2br(e($event['description'])) ?></span>
     </td>
   </tr>
   <?php endif; ?>
 </table>
 <?php endif; ?>
 
+<!-- CTA button -->
 <table cellpadding="0" cellspacing="0" border="0">
   <tr>
-    <td style="border-radius:8px;background:#6366f1">
+    <td style="border-radius:8px;background:#3451D1;box-shadow:0 1px 3px rgba(52,81,209,.30),inset 0 1px 0 rgba(255,255,255,.12)">
       <a href="<?= e($groupUrl) ?>"
-         style="display:inline-block;padding:12px 28px;color:#fff;text-decoration:none;font-weight:700;font-size:.92rem">
+         style="display:inline-block;padding:12px 28px;color:#FFFFFF;text-decoration:none;font-weight:600;font-size:.9375rem">
         <?= e(Lang::t('email.view_group_btn')) ?> →
       </a>
     </td>

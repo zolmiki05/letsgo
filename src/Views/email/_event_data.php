@@ -8,28 +8,29 @@ if (empty($displaySlots) && ($event['event_date'] || $event['date_text'])) {
     $displaySlots = [['slot_date' => $event['event_date'], 'slot_text' => $event['date_text']]];
 }
 
+// Signal design system — light mode status colors
 $statusColors = [
-    'IDEA'       => ['bg' => '#f0f4ff', 'color' => '#6366f1'],
-    'DISCUSSING' => ['bg' => '#fff7ed', 'color' => '#f59e0b'],
-    'FINAL'      => ['bg' => '#f0fdf4', 'color' => '#22c55e'],
-    'CANCELLED'  => ['bg' => '#fef2f2', 'color' => '#ef4444'],
+    'IDEA'       => ['bg' => '#EFF6FF', 'color' => '#1E40AF'],
+    'DISCUSSING' => ['bg' => '#FFFBEB', 'color' => '#92400E'],
+    'FINAL'      => ['bg' => '#ECFDF5', 'color' => '#065F46'],
+    'CANCELLED'  => ['bg' => '#FFF1F2', 'color' => '#9F1239'],
 ];
-$sc = $statusColors[$event['status']] ?? ['bg' => '#f3f4f6', 'color' => '#6b7280'];
+$sc = $statusColors[$event['status']] ?? ['bg' => '#F2F5FC', 'color' => '#46567A'];
 
 function _emailRow(string $label, string $value): string {
     return '<tr>'
-        . '<td style="padding:8px 14px;border-bottom:1px solid #f0f0f5;width:38%;vertical-align:top">'
-        .   '<span style="font-size:.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em">' . $label . '</span>'
+        . '<td style="padding:9px 14px;border-bottom:1px solid #DAE3F5;width:38%;vertical-align:top">'
+        .   '<span style="font-size:.72rem;font-weight:600;color:#8A9DC4;text-transform:uppercase;letter-spacing:.06em">' . $label . '</span>'
         . '</td>'
-        . '<td style="padding:8px 14px;border-bottom:1px solid #f0f0f5;vertical-align:top">'
-        .   '<span style="font-size:.88rem;color:#222;line-height:1.5">' . $value . '</span>'
+        . '<td style="padding:9px 14px;border-bottom:1px solid #DAE3F5;vertical-align:top">'
+        .   '<span style="font-size:.875rem;color:#0B1120;line-height:1.5">' . $value . '</span>'
         . '</td>'
         . '</tr>';
 }
 ?>
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="background:#f8f8fc;border:1px solid #e8e8f0;border-radius:10px;overflow:hidden;margin:16px 0;font-size:.88rem">
+       style="background:#F2F5FC;border:1px solid #C8D3EC;border-radius:12px;overflow:hidden;margin:16px 0;font-size:.875rem">
 
   <?php if (!empty($displaySlots)): ?>
   <?php if (count($displaySlots) === 1): $s = $displaySlots[0]; ?>
@@ -79,14 +80,15 @@ function _emailRow(string $label, string $value): string {
   <?= _emailRow(e(Lang::t('event.field_notes')), nl2br(e($event['notes']))) ?>
   <?php endif; ?>
 
+  <!-- Status row — no bottom border -->
   <tr>
-    <td style="padding:8px 14px;width:38%;vertical-align:middle">
-      <span style="font-size:.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em">
+    <td style="padding:9px 14px;width:38%;vertical-align:middle">
+      <span style="font-size:.72rem;font-weight:600;color:#8A9DC4;text-transform:uppercase;letter-spacing:.06em">
         <?= e(Lang::t('event.field_status')) ?>
       </span>
     </td>
-    <td style="padding:8px 14px;vertical-align:middle">
-      <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;
+    <td style="padding:9px 14px;vertical-align:middle">
+      <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;
                    background:<?= $sc['bg'] ?>;color:<?= $sc['color'] ?>">
         <?= e(Lang::t('event.status.' . $event['status'])) ?>
       </span>
