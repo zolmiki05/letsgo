@@ -27,11 +27,113 @@ UPGRADE_SQL="${2:-$SCRIPT_DIR/docker/mysql/upgrade.sql}"
 
 # ── Load .env ─────────────────────────────────────────────────────────────────
 
-if [ -f "$SCRIPT_DIR/.env" ]; then
-    set -o allexport
-    # shellcheck source=/dev/null
-    source "$SCRIPT_DIR/.env"
-    set +o allexport
+ENV_FILE="$SCRIPT_DIR/.env"
+EXAMPLE_FILE="$SCRIPT_DIR/.env.example"
+
+if [ ! -f "$ENV_FILE" ]; then
+    echo "✗ .env not found. Run ./setup.sh first." >&2
+    exit 1
+fi
+
+set -o allexport
+# shellcheck source=/dev/null
+source "$ENV_FILE"
+set +o allexport
+
+# ── Sync missing keys from .env.example ──────────────────────────────────────
+# Compares .env against .env.example; for every key that is in the example but
+# absent from .env, prompts the user for a value and appends it to .env.
+
+if [ -f "$EXAMPLE_FILE" ]; then
+
+    # Collect keys that are in .env.example but missing from .env
+    missing_keys=()
+    while IFS= read -r line; do
+        [[ -z "$line" || "$line" =~ ^# ]] && continue
+        if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)= ]]; then
+            key="${BASH_REMATCH[1]}"
+            if ! grep -q "^${key}=" "$ENV_FILE"; then
+                missing_keys+=("$key")
+            fi
+        fi
+    done < "$EXAMPLE_FILE"
+
+    if [ ${#missing_keys[@]} -gt 0 ]; then
+        echo ""
+        echo "  Your .env is missing ${#missing_keys[@]} key(s) found in .env.example."
+        echo "  Press Enter to accept the default value shown in brackets,"
+        echo "  or type a new value and press Enter."
+        echo ""
+
+        # Walk .env.example a second time; for missing keys show buffered
+        # comments then prompt, and collect the additions.
+        pending_comments=""
+        additions_file="$(mktemp)"
+
+        while IFS= read -r line; do
+            # Blank line: keep in comment buffer (preserves section spacing)
+            if [[ -z "$line" ]]; then
+                pending_comments+=$'\n'
+                continue
+            fi
+
+            # Comment line: accumulate
+            if [[ "$line" =~ ^# ]]; then
+                pending_comments+="$line"$'\n'
+                continue
+            fi
+
+            # Key=value line
+            if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*) ]]; then
+                key="${BASH_REMATCH[1]}"
+                default_val="${BASH_REMATCH[2]}"
+
+                # Is this key in our missing list?
+                is_missing=false
+                for m in "${missing_keys[@]}"; do
+                    [ "$m" = "$key" ] && is_missing=true && break
+                done
+
+                if $is_missing; then
+                    # Print buffered comments to terminal for context
+                    if [[ -n "$pending_comments" ]]; then
+                        printf '%s' "$pending_comments"
+                    fi
+
+                    # Prompt with default
+                    if [[ -n "$default_val" ]]; then
+                        read -r -p "  $key [$default_val]: " user_val </dev/tty
+                        final_val="${user_val:-$default_val}"
+                    else
+                        read -r -p "  $key: " final_val </dev/tty
+                    fi
+
+                    # Write to additions file (with comments for readability)
+                    if [[ -n "$pending_comments" ]]; then
+                        printf '%s' "$pending_comments" >> "$additions_file"
+                    fi
+                    printf '%s=%s\n' "$key" "$final_val" >> "$additions_file"
+                fi
+
+                # Reset comment buffer after every key line
+                pending_comments=""
+            fi
+        done < "$EXAMPLE_FILE"
+
+        # Append collected additions to .env
+        if [ -s "$additions_file" ]; then
+            echo "" >> "$ENV_FILE"
+            cat "$additions_file" >> "$ENV_FILE"
+            echo ""
+            echo "  ✓ Added ${#missing_keys[@]} key(s) to .env"
+            # Reload .env so new values are available for the rest of the script
+            set -o allexport
+            source "$ENV_FILE"
+            set +o allexport
+        fi
+        rm -f "$additions_file"
+        echo ""
+    fi
 fi
 
 DB_CONTAINER="${DB_CONTAINER:-letsgo_db}"
